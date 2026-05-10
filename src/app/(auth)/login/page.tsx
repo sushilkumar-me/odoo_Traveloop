@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { signIn, useSession } from "next-auth/react";
+import { signIn } from "next-auth/react";
 import { motion } from "framer-motion";
 import { Mail, Lock, Plane, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -25,14 +25,6 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
-  const { data: session, status } = useSession();
-
-  // Only redirect after session loads AND user is authenticated
-  useEffect(() => {
-    if (status === "authenticated" && session) {
-      router.push("/dashboard");
-    }
-  }, [session, status, router]);
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -55,19 +47,9 @@ export default function LoginPage() {
     if (result?.error) {
       setError("Invalid email or password");
       setIsLoading(false);
+    } else {
+      router.push("/dashboard");
     }
-    // Redirect will happen via useEffect when session is set
-  }
-
-  // Show loading state while checking session
-  if (status === "loading") {
-    return (
-      <Card className="bg-white/95 backdrop-blur-xl border border-gray-200/50 shadow-2xl">
-        <CardContent className="p-8 flex items-center justify-center min-h-[400px]">
-          <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
-        </CardContent>
-      </Card>
-    );
   }
 
   return (

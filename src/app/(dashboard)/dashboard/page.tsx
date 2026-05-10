@@ -1,7 +1,9 @@
+"use client";
+
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, MapPin, Calendar, Wallet, CheckSquare, BookOpen, TrendingUp, Users } from "lucide-react";
+import { Plus, MapPin, Calendar, Wallet, TrendingUp } from "lucide-react";
 
 const quickActions = [
   { icon: Plus, label: "Create Trip", href: "/dashboard/trips/new" },
@@ -24,7 +26,7 @@ export default function DashboardPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold font-serif">Dashboard</h1>
-          <p className="text-muted-foreground">Welcome back! Here's your travel overview.</p>
+          <p className="text-muted-foreground">Welcome back! Here&apos;s your travel overview.</p>
         </div>
         <Link href="/dashboard/trips/new">
           <Button className="gap-2">
