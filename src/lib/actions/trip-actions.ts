@@ -174,3 +174,111 @@ export async function updateTrip(
     return { success: false, error: "Failed to update trip" };
   }
 }
+
+export async function addCityToTrip(
+  tripId: string,
+  data: { name: string; country: string; startDate: Date; endDate: Date }
+) {
+  try {
+    const trip = await db.trip.findUnique({
+      where: { id: tripId },
+      include: { cities: true },
+    });
+    if (!trip) throw new Error("Trip not found");
+
+    const order = trip.cities.length;
+
+    await db.city.create({
+      data: {
+        tripId,
+        name: data.name,
+        country: data.country,
+        startDate: new Date(data.startDate),
+        endDate: new Date(data.endDate),
+        order,
+      },
+    });
+
+    revalidatePath(`/dashboard/trips/${tripId}`);
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message || "Failed to add city" };
+  }
+}
+
+export async function addActivityToCity(
+  cityId: string,
+  tripId: string,
+  data: {
+    name: string;
+    description?: string;
+    location?: string;
+    cost?: number;
+    duration?: string;
+    date?: string;
+    time?: string;
+  }
+) {
+  try {
+    // We add a unique hash because the Activity schema currently enforces @unique on the name field globally.
+    const uniqueName = `${data.name}#${Math.random().toString(36).substring(2, 8)}`;
+
+    await db.activity.create({
+      data: {
+        cityId,
+        tripId,
+        name: uniqueName,
+        description: data.description,
+        location: data.location,
+        cost: data.cost ? Number(data.cost) : null,
+        duration: data.duration,
+        date: data.date ? new Date(data.date) : null,
+        time: data.time || null,
+      },
+    });
+    revalidatePath(`/dashboard/trips/${tripId}`);
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message || "Failed to add activity" };
+  }
+}
+
+export async function reorderCities(tripId: string, orderedCityIds: string[]) {
+  try {
+    // Run all updates in a transaction
+    await db.$transaction(
+      orderedCityIds.map((id, index) =>
+        db.city.update({
+          where: { id },
+          data: { order: index },
+        })
+      )
+    );
+
+    revalidatePath(`/dashboard/trips/${tripId}`);
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: "Failed to reorder cities" };
+  }
+}
+
+export async function removeCityFromTrip(cityId: string, tripId: string) {
+  try {
+    await db.activity.deleteMany({ where: { cityId } });
+    await db.city.delete({ where: { id: cityId } });
+    revalidatePath(`/dashboard/trips/${tripId}`);
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: "Failed to delete stop" };
+  }
+}
+
+export async function removeActivity(activityId: string, tripId: string) {
+  try {
+    await db.activity.delete({ where: { id: activityId } });
+    revalidatePath(`/dashboard/trips/${tripId}`);
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: "Failed to delete activity" };
+  }
+}

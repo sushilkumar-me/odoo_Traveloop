@@ -384,7 +384,12 @@ export function MyTripsContent({ user }: MyTripsContentProps) {
                           View
                         </Button>
                       </Link>
-                      <Link href={`/dashboard/trips/${trip.id}/edit`}>
+                      <Link href={`/dashboard/trips/${trip.id}/budget`} title="Budget Dashboard">
+                        <Button size="sm" variant="ghost" className="text-gray-500 hover:text-[#ff7a1a] hover:bg-orange-50 p-2">
+                          <Wallet className="h-4 w-4" />
+                        </Button>
+                      </Link>
+                      <Link href={`/dashboard/trips/${trip.id}/edit`} title="Edit Trip">
                         <Button size="sm" variant="ghost" className="text-gray-500 hover:text-[#ff7a1a] hover:bg-orange-50 p-2">
                           <Edit2 className="h-4 w-4" />
                         </Button>
@@ -395,6 +400,7 @@ export function MyTripsContent({ user }: MyTripsContentProps) {
                         disabled={deletingId === trip.id || isPending}
                         onClick={() => handleDelete(trip.id, trip.name)}
                         className="text-gray-500 hover:text-red-500 hover:bg-red-50 p-2 disabled:opacity-50"
+                        title="Delete Trip"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>

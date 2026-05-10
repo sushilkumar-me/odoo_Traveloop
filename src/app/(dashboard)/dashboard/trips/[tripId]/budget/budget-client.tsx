@@ -26,9 +26,14 @@ import {
   Calculator,
   MapPin,
   Globe,
+  Plus,
+  Pencil,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { setTripBudget, addExpense } from "@/lib/actions/budget-actions";
+import { useState } from "react";
 
 const CURRENCY = "$"; // Use user's currency ideally, but standardizing to $ for display if mixed
 const COLORS = ["#3b82f6", "#8b5cf6", "#f59e0b", "#10b981", "#ec4899", "#94a3b8", "#f43f5e", "#14b8a6"];
@@ -54,6 +59,7 @@ interface BudgetClientProps {
     dailyBudget: number;
   }[];
   overBudgetDays: any[];
+  tripId?: string;
 }
 
 export default function BudgetClient({
@@ -68,19 +74,63 @@ export default function BudgetClient({
   categoryData,
   dailyData,
   overBudgetDays,
+  tripId,
 }: BudgetClientProps) {
-  if (totalBudget === 0 && totalCost === 0) {
+  const [isEditingBudget, setIsEditingBudget] = useState(false);
+  const [budgetInput, setBudgetInput] = useState(totalBudget > 0 ? totalBudget.toString() : "");
+  
+  const [showExpenseForm, setShowExpenseForm] = useState(false);
+  const [expenseForm, setExpenseForm] = useState({ amount: "", description: "", category: "Transport", date: new Date().toISOString().split('T')[0] });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSetBudget = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!tripId) return;
+    setIsSubmitting(true);
+    await setTripBudget(tripId, Number(budgetInput));
+    setIsEditingBudget(false);
+    setIsSubmitting(false);
+  };
+
+  const handleAddExpense = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!tripId) return;
+    setIsSubmitting(true);
+    await addExpense(tripId, {
+      amount: Number(expenseForm.amount),
+      description: expenseForm.description,
+      category: expenseForm.category,
+      date: expenseForm.date,
+    });
+    setShowExpenseForm(false);
+    setExpenseForm({ amount: "", description: "", category: "Transport", date: new Date().toISOString().split('T')[0] });
+    setIsSubmitting(false);
+  };
+
+  if (totalBudget === 0 && totalCost === 0 && !isEditingBudget && !showExpenseForm) {
     return (
       <div className="min-h-screen bg-gray-50 p-4 md:p-8 flex items-center justify-center">
         <Card className="max-w-md w-full text-center p-8 border-dashed border-2 shadow-none">
           <Globe className="w-16 h-16 text-gray-300 mx-auto mb-4" />
           <h2 className="text-xl font-bold text-gray-900 mb-2">No Budget Data Yet</h2>
           <p className="text-gray-500 mb-6">
-            Create a trip with a budget and add some expenses to see your financial breakdown here.
+            Set a budget for your trip or add your first expense to see your financial breakdown here.
           </p>
-          <Link href="/plan-trip">
-            <Button className="bg-[#ff7a1a] hover:bg-[#e66b15]">Plan a Trip</Button>
-          </Link>
+          <div className="flex flex-col gap-3">
+            <Button onClick={() => setIsEditingBudget(true)} className="bg-[#ff7a1a] hover:bg-[#e66b15] text-white">
+              <Wallet className="w-4 h-4 mr-2" />
+              Set Total Budget
+            </Button>
+            <Button onClick={() => setShowExpenseForm(true)} variant="outline" className="text-gray-600">
+              <Plus className="w-4 h-4 mr-2" />
+              Add First Expense
+            </Button>
+            {tripId && (
+              <Link href={`/dashboard/trips/${tripId}`}>
+                <Button variant="ghost" className="w-full text-gray-400">Back to Trip</Button>
+              </Link>
+            )}
+          </div>
         </Card>
       </div>
     );
@@ -90,14 +140,109 @@ export default function BudgetClient({
     <div className="min-h-screen bg-gray-50 p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
-            Trip Budget & Cost Breakdown
-          </h1>
-          <p className="text-gray-500 mt-2">
-            Monitor your travel spending, analyze costs, and avoid going over budget.
-          </p>
+        <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+          <div>
+            {tripId && (
+              <Link href={`/dashboard/trips/${tripId}`}>
+                <Button variant="ghost" className="gap-2 text-gray-600 hover:text-gray-900 -ml-2 mb-4">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-arrow-left"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+                  Back to Itinerary
+                </Button>
+              </Link>
+            )}
+            <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
+              Trip Budget & Cost Breakdown
+            </h1>
+            <p className="text-gray-500 mt-2">
+              Monitor your travel spending, analyze costs, and avoid going over budget.
+            </p>
+          </div>
+          <div className="flex items-center gap-3 shrink-0">
+            <Button onClick={() => setIsEditingBudget(!isEditingBudget)} variant="outline" className="text-gray-600 bg-white shadow-sm border-gray-200">
+              <Pencil className="w-4 h-4 mr-2" />
+              {totalBudget > 0 ? "Edit Budget" : "Set Budget"}
+            </Button>
+            <Button onClick={() => setShowExpenseForm(!showExpenseForm)} className="bg-[#ff7a1a] hover:bg-[#e66b15] text-white shadow-md shadow-orange-500/20">
+              <Plus className="w-4 h-4 mr-2" />
+              Add Expense
+            </Button>
+          </div>
         </div>
+
+        {/* Dynamic Forms */}
+        {isEditingBudget && (
+          <Card className="border-[#ff7a1a]/20 shadow-md">
+            <CardContent className="p-6">
+              <form onSubmit={handleSetBudget} className="flex items-end gap-4 max-w-sm">
+                <div className="flex-1">
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">Total Trip Budget ({CURRENCY})</label>
+                  <Input 
+                    type="number" 
+                    required 
+                    min="0"
+                    step="0.01"
+                    value={budgetInput} 
+                    onChange={(e) => setBudgetInput(e.target.value)} 
+                    placeholder="e.g. 5000" 
+                  />
+                </div>
+                <Button disabled={isSubmitting} type="submit" className="bg-[#ff7a1a] hover:bg-[#e66b15] text-white">
+                  Save
+                </Button>
+                <Button type="button" variant="ghost" onClick={() => setIsEditingBudget(false)}>Cancel</Button>
+              </form>
+            </CardContent>
+          </Card>
+        )}
+
+        {showExpenseForm && (
+          <Card className="border-emerald-500/20 shadow-md bg-emerald-50/10">
+            <CardHeader className="pb-3 border-b border-gray-100">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Plus className="w-5 h-5 text-emerald-500" />
+                Record New Expense
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <form onSubmit={handleAddExpense} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 mb-1 block">Amount ({CURRENCY})</label>
+                    <Input type="number" required min="0" step="0.01" value={expenseForm.amount} onChange={(e) => setExpenseForm({ ...expenseForm, amount: e.target.value })} placeholder="e.g. 45.50" />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 mb-1 block">Description</label>
+                    <Input required value={expenseForm.description} onChange={(e) => setExpenseForm({ ...expenseForm, description: e.target.value })} placeholder="e.g. Train to Rome" />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 mb-1 block">Category</label>
+                    <select 
+                      required
+                      className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      value={expenseForm.category} 
+                      onChange={(e) => setExpenseForm({ ...expenseForm, category: e.target.value })}
+                    >
+                      <option value="Transport">Transport</option>
+                      <option value="Stay">Stay</option>
+                      <option value="Meals">Meals</option>
+                      <option value="Activities">Activities</option>
+                      <option value="Shopping">Shopping</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 mb-1 block">Date</label>
+                    <Input type="date" required value={expenseForm.date} onChange={(e) => setExpenseForm({ ...expenseForm, date: e.target.value })} />
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2 pt-2">
+                  <Button type="button" variant="ghost" onClick={() => setShowExpenseForm(false)}>Cancel</Button>
+                  <Button disabled={isSubmitting} type="submit" className="bg-emerald-500 hover:bg-emerald-600 text-white">Save Expense</Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        )}
 
         {/* 1. TOTAL TRIP COST SUMMARY */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

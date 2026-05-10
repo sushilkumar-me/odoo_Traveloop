@@ -4,25 +4,28 @@ import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
 import BudgetClient from "./budget-client";
 
-export default async function BudgetPage() {
+export default async function BudgetPage({ params }: { params: Promise<{ tripId: string }> }) {
+  const { tripId } = await params;
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) redirect("/login");
 
-  const user = await db.user.findUnique({
-    where: { email: session.user.email },
+  const trip = await db.trip.findFirst({
+    where: { 
+      id: tripId,
+      user: { email: session.user.email }
+    },
     include: {
-      trips: {
-        include: {
-          budgets: {
-            include: { expenses: true },
-          },
-          cities: true,
-        },
+      budgets: {
+        include: { expenses: true },
       },
+      cities: true,
     },
   });
 
-  if (!user) redirect("/login");
+  if (!trip) redirect("/dashboard/trips");
+
+  // We wrap the single trip in an array to reuse the existing aggregation logic
+  const user = { trips: [trip] };
 
   let totalBudget = 0;
   let totalCost = 0;
@@ -145,6 +148,7 @@ export default async function BudgetPage() {
 
   return (
     <BudgetClient
+      tripId={tripId}
       totalCost={totalCost}
       totalBudget={totalBudget}
       remainingBudget={remainingBudget}
