@@ -6,9 +6,15 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Search, Menu, Bell, LogOut } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
+import { useSession, signOut } from "next-auth/react";
 
 export function Navbar() {
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const { data: session } = useSession();
+
+  const userName = session?.user?.name || "User";
+  const userEmail = session?.user?.email || "";
+  const initials = userName.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
 
   return (
     <header className="border-b bg-card px-6 py-3">
@@ -44,15 +50,15 @@ export function Navbar() {
               className="flex items-center gap-2 p-1 rounded-lg hover:bg-muted"
             >
               <Avatar className="h-8 w-8">
-                <AvatarFallback>JD</AvatarFallback>
+                <AvatarFallback>{initials}</AvatarFallback>
               </Avatar>
             </button>
 
             {showUserMenu && (
               <div className="absolute right-0 mt-2 w-48 bg-popover border rounded-lg shadow-lg py-1 z-50">
                 <div className="px-3 py-2 border-b">
-                  <p className="font-medium">John Doe</p>
-                  <p className="text-xs text-muted-foreground">john@example.com</p>
+                  <p className="font-medium">{userName}</p>
+                  <p className="text-xs text-muted-foreground">{userEmail}</p>
                 </div>
                 <Link
                   href="/dashboard/profile"
@@ -66,7 +72,10 @@ export function Navbar() {
                 >
                   Settings
                 </Link>
-                <button className="w-full text-left px-3 py-2 text-sm text-destructive hover:bg-muted flex items-center gap-2">
+                <button
+                  onClick={() => signOut({ callbackUrl: "/login" })}
+                  className="w-full text-left px-3 py-2 text-sm text-destructive hover:bg-muted flex items-center gap-2"
+                >
                   <LogOut className="h-4 w-4" />
                   Sign Out
                 </button>
