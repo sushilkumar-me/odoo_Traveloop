@@ -364,6 +364,7 @@ Contributions are welcome! Here's how you can help:
 Built with ❤️ for the **Odoo Combat Hackathon** by:
 
 - **Sushil Kumar** — [@sushilkumar-me](https://github.com/sushilkumar-me)
+- **Aman Agarwal** — [@codeamss](https://github.com/codeamss)
 
 ---
 
