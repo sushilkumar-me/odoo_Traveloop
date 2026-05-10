@@ -30,7 +30,7 @@ export default function LoginPage() {
   // Only redirect after session loads AND user is authenticated
   useEffect(() => {
     if (status === "authenticated" && session) {
-      router.push("/dashboard");
+      router.push("/dashboard/dashboard");
     }
   }, [session, status, router]);
 

@@ -1,17 +1,9 @@
 "use client";
 
-import { ThemeProvider as NextThemesProvider } from "next-themes";
+import { ThemeProvider as NextThemesProvider, ThemeProviderProps } from "next-themes";
 import { useMounted } from "./use-mounted";
 
-export function ThemeProvider({
-  children,
-  ...props
-}: {
-  children: React.ReactNode;
-  attribute?: string;
-  defaultTheme?: string;
-  enableSystem?: boolean;
-}) {
+export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
   const mounted = useMounted();
 
   if (!mounted) {
