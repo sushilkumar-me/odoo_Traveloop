@@ -343,7 +343,7 @@ export default function ProfilePage() {
                       },
                       {
                         label: "Total Budget",
-                        value: `$${(stats?.totalBudget || 0).toLocaleString("en-US")}`,
+                        value: `?${(stats?.totalBudget || 0).toLocaleString("en-US")}`,
                         icon: Wallet,
                         color: "from-blue-500 to-blue-600",
                       },

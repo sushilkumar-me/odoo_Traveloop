@@ -94,12 +94,14 @@ export default async function DashboardPage() {
           </div>
 
           {/* New Trip Button */}
-          <Link href="/plan-trip">
-            <Button className="h-12 px-6 bg-[#ff7a1a] hover:bg-[#e66b15] text-white font-semibold rounded-xl shadow-lg shadow-orange-500/25 transition-all">
+          <Button asChild className="h-12 px-6 bg-[#ff7a1a] hover:bg-[#e66b15] text-white font-semibold rounded-xl shadow-lg shadow-orange-500/25 transition-all">
+  <Link href="/plan-trip">
+    
               <Plus className="h-5 w-5 mr-2" />
               New Trip
-            </Button>
-          </Link>
+            
+  </Link>
+</Button>
         </div>
       </div>
 
@@ -209,11 +211,13 @@ export default async function DashboardPage() {
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-2">No trips yet</h3>
               <p className="text-gray-500 mb-6">Start planning your first adventure!</p>
-              <Link href="/plan-trip">
-                <Button className="bg-[#ff7a1a] hover:bg-[#e66b15] text-white font-semibold px-6 py-3 rounded-xl">
+              <Button asChild className="bg-[#ff7a1a] hover:bg-[#e66b15] text-white font-semibold px-6 py-3 rounded-xl">
+  <Link href="/plan-trip">
+    
                   Plan a Trip
-                </Button>
-              </Link>
+                
+  </Link>
+</Button>
             </CardContent>
           </Card>
         ) : (

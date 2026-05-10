@@ -28,7 +28,7 @@ const popularDestinations = [
     id: 1,
     name: "Bali",
     description: "Tropical paradise with temples and beaches",
-    cost: "$1,200",
+    cost: "₹1,200",
     color: "from-emerald-400 to-teal-500",
     emoji: "🌴",
   },
@@ -36,7 +36,7 @@ const popularDestinations = [
     id: 2,
     name: "Paris",
     description: "Romantic city of lights and art",
-    cost: "$2,500",
+    cost: "₹2,500",
     color: "from-rose-400 to-pink-500",
     emoji: "🗼",
   },
@@ -44,7 +44,7 @@ const popularDestinations = [
     id: 3,
     name: "Tokyo",
     description: "Modern culture meets ancient traditions",
-    cost: "$2,800",
+    cost: "₹2,800",
     color: "from-red-400 to-orange-500",
     emoji: "🏯",
   },
@@ -52,7 +52,7 @@ const popularDestinations = [
     id: 4,
     name: "Goa",
     description: "Beaches, nightlife, and Portuguese heritage",
-    cost: "$800",
+    cost: "₹800",
     color: "from-yellow-400 to-amber-500",
     emoji: "🏖️",
   },
@@ -60,7 +60,7 @@ const popularDestinations = [
     id: 5,
     name: "Dubai",
     description: "Luxury shopping and futuristic architecture",
-    cost: "$3,000",
+    cost: "₹3,000",
     color: "from-amber-400 to-yellow-500",
     emoji: "🏙️",
   },
@@ -68,7 +68,7 @@ const popularDestinations = [
     id: 6,
     name: "Switzerland",
     description: "Alpine adventures and scenic beauty",
-    cost: "$3,500",
+    cost: "₹3,500",
     color: "from-sky-400 to-blue-500",
     emoji: "⛰️",
   },
@@ -205,11 +205,13 @@ export default function PlanTripPage() {
             <span className="text-xl font-bold font-serif text-gray-800">Traveloop</span>
           </Link>
           <div className="flex items-center gap-4">
-            <Link href="/dashboard">
-              <Button variant="ghost" className="text-gray-600 hover:text-gray-900">
+            <Button asChild variant="ghost" className="text-gray-600 hover:text-gray-900">
+  <Link href="/dashboard">
+    
                 Dashboard
-              </Button>
-            </Link>
+              
+  </Link>
+</Button>
           </div>
         </div>
       </header>

@@ -281,7 +281,7 @@ export function ItineraryView({ trip, allUserTrips }: ItineraryViewProps) {
             <Input type="time" value={activityForm.time} onChange={(e) => setActivityForm({ ...activityForm, time: e.target.value })} placeholder="Time" />
             <Input value={activityForm.location} onChange={(e) => setActivityForm({ ...activityForm, location: e.target.value })} placeholder="Location" />
             <Input value={activityForm.duration} onChange={(e) => setActivityForm({ ...activityForm, duration: e.target.value })} placeholder="Duration (e.g. 2h)" />
-            <Input type="number" value={activityForm.cost} onChange={(e) => setActivityForm({ ...activityForm, cost: e.target.value })} placeholder="Cost ($)" />
+            <Input type="number" value={activityForm.cost} onChange={(e) => setActivityForm({ ...activityForm, cost: e.target.value })} placeholder="Cost (₹)" />
           </div>
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="ghost" size="sm" onClick={() => setAddingActivityTo(null)}>Cancel</Button>
@@ -296,19 +296,23 @@ export function ItineraryView({ trip, allUserTrips }: ItineraryViewProps) {
     <div className="space-y-8">
       {/* Back + Actions */}
       <div className="flex items-center justify-between gap-4">
-        <Link href="/dashboard/trips">
-          <Button variant="ghost" className="gap-2 text-gray-600 hover:text-gray-900 -ml-2">
+        <Button asChild variant="ghost" className="gap-2 text-gray-600 hover:text-gray-900 -ml-2">
+  <Link href="/dashboard/trips">
+    
             <ArrowLeft className="w-4 h-4" />
             All Trips
-          </Button>
-        </Link>
+          
+  </Link>
+</Button>
         <div className="flex items-center gap-2">
-          <Link href={`/dashboard/trips/${trip.id}/budget`}>
-            <Button variant="outline" className="gap-2 text-gray-600 hover:text-gray-900">
+          <Button asChild variant="outline" className="gap-2 text-gray-600 hover:text-gray-900">
+  <Link href={`/dashboard/trips/${trip.id}/budget`}>
+    
               <Wallet className="w-4 h-4" />
               Budget Dashboard
-            </Button>
-          </Link>
+            
+  </Link>
+</Button>
           <Button
             variant="ghost"
             onClick={handleDelete}
@@ -376,8 +380,8 @@ export function ItineraryView({ trip, allUserTrips }: ItineraryViewProps) {
           },
           {
             label: "Total Budget",
-            value: totalBudget > 0 ? `$${totalBudget.toLocaleString("en-US")}` : "—",
-            sub: totalSpent > 0 ? `$${totalSpent.toLocaleString("en-US")} spent` : "No expenses yet",
+            value: totalBudget > 0 ? `₹${totalBudget.toLocaleString("en-US")}` : "—",
+            sub: totalSpent > 0 ? `₹${totalSpent.toLocaleString("en-US")} spent` : "No expenses yet",
             icon: Wallet,
             gradient: "from-purple-500 to-purple-600",
           },
@@ -385,7 +389,7 @@ export function ItineraryView({ trip, allUserTrips }: ItineraryViewProps) {
             label: "Remaining",
             value:
               totalBudget > 0
-                ? `$${Math.abs(remaining).toLocaleString("en-US")}`
+                ? `₹${Math.abs(remaining).toLocaleString("en-US")}`
                 : "—",
             sub:
               totalBudget > 0
@@ -716,26 +720,30 @@ export function ItineraryView({ trip, allUserTrips }: ItineraryViewProps) {
                       </Link>
                     ))}
                 </div>
-                <Link href="/dashboard/trips">
-                  <Button
+                <Button asChild
                     variant="ghost"
                     size="sm"
                     className="w-full mt-3 text-[#ff7a1a] hover:bg-orange-50"
                   >
+  <Link href="/dashboard/trips">
+    
                     View all trips
-                  </Button>
-                </Link>
+                  
+  </Link>
+</Button>
               </CardContent>
             </Card>
           )}
 
           {/* Plan new trip */}
-          <Link href="/plan-trip">
-            <Button className="w-full bg-[#ff7a1a] hover:bg-[#e66b15] text-white font-semibold rounded-xl shadow-lg shadow-orange-500/25 gap-2">
+          <Button asChild className="w-full bg-[#ff7a1a] hover:bg-[#e66b15] text-white font-semibold rounded-xl shadow-lg shadow-orange-500/25 gap-2">
+  <Link href="/plan-trip">
+    
               <Plus className="w-4 h-4" />
               Plan Another Trip
-            </Button>
-          </Link>
+            
+  </Link>
+</Button>
         </div>
       </div>
     </div>

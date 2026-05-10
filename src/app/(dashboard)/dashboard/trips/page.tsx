@@ -71,12 +71,14 @@ export default async function TripsPage() {
           </p>
         </div>
 
-        <Link href="/plan-trip">
-          <Button className="h-12 px-6 bg-[#ff7a1a] hover:bg-[#e66b15] text-white font-semibold rounded-xl shadow-lg shadow-orange-500/25">
+        <Button asChild className="h-12 px-6 bg-[#ff7a1a] hover:bg-[#e66b15] text-white font-semibold rounded-xl shadow-lg shadow-orange-500/25">
+  <Link href="/plan-trip">
+    
             <Plus className="h-5 w-5 mr-2" />
             New Trip
-          </Button>
-        </Link>
+          
+  </Link>
+</Button>
       </div>
 
       {/* Stats */}
@@ -135,12 +137,14 @@ export default async function TripsPage() {
               Start your adventure! Create your first trip and begin exploring
               the world.
             </p>
-            <Link href="/plan-trip">
-              <Button className="bg-[#ff7a1a] hover:bg-[#e66b15] text-white font-semibold px-8 py-3 rounded-xl">
+            <Button asChild className="bg-[#ff7a1a] hover:bg-[#e66b15] text-white font-semibold px-8 py-3 rounded-xl">
+  <Link href="/plan-trip">
+    
                 <Plus className="h-5 w-5 mr-2" />
                 Plan Your First Trip
-              </Button>
-            </Link>
+              
+  </Link>
+</Button>
           </CardContent>
         </Card>
       ) : (
@@ -228,13 +232,13 @@ export default async function TripsPage() {
                       <div className="flex items-center gap-1">
                         <Wallet className="h-4 w-4 text-[#ff7a1a]" />
                         <span className="font-semibold text-gray-700">
-                          {budget > 0 ? `$${budget.toLocaleString("en-US")}` : "No budget set"}
+                          {budget > 0 ? `₹${budget.toLocaleString("en-US")}` : "No budget set"}
                         </span>
                         {budget > 0 && <span className="text-gray-400">budget</span>}
                       </div>
                       {spent > 0 && (
                         <span className="text-xs text-gray-400">
-                          ${spent.toLocaleString("en-US")} spent
+                          ₹{spent.toLocaleString("en-US")} spent
                         </span>
                       )}
                     </div>
@@ -242,16 +246,20 @@ export default async function TripsPage() {
                   
                   {/* Footer Actions */}
                   <div className="flex items-center gap-2 mt-4 border-t border-gray-100 pt-4">
-                    <Link href={`/dashboard/trips/${trip.id}`} className="flex-1">
-                      <Button size="sm" variant="outline" className="w-full gap-2">
+                    <Button asChild size="sm" variant="outline" className="w-full gap-2">
+  <Link href={`/dashboard/trips/${trip.id}`} className="flex-1">
+    
                         View Itinerary
-                      </Button>
-                    </Link>
-                    <Link href={`/dashboard/trips/${trip.id}/budget`} title="Budget Dashboard">
-                      <Button size="sm" variant="ghost" className="text-gray-500 hover:text-[#ff7a1a] hover:bg-orange-50 p-2">
+                      
+  </Link>
+</Button>
+                    <Button asChild size="sm" variant="ghost" className="text-gray-500 hover:text-[#ff7a1a] hover:bg-orange-50 p-2">
+  <Link href={`/dashboard/trips/${trip.id}/budget`} title="Budget Dashboard">
+    
                         <Wallet className="h-4 w-4" />
-                      </Button>
-                    </Link>
+                      
+  </Link>
+</Button>
                   </div>
                 </div>
               </div>

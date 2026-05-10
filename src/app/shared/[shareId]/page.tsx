@@ -245,7 +245,7 @@ export default function SharedTripPage() {
 
               <div className="flex items-center gap-2 text-orange-400 font-medium">
                 <DollarSign className="h-5 w-5" />
-                <span>${totalBudget}</span>
+                <span>₹{totalBudget}</span>
               </div>
 
               <div className="flex items-center gap-2 text-slate-300">
@@ -375,7 +375,7 @@ export default function SharedTripPage() {
                                         )}
                                         {activity.cost !== null && activity.cost > 0 && (
                                           <p className="text-orange-400 text-sm mt-1">
-                                            ${activity.cost}
+                                            ₹{activity.cost}
                                           </p>
                                         )}
                                       </div>
@@ -495,7 +495,7 @@ export default function SharedTripPage() {
                     <DollarSign className="h-4 w-4" />
                     Budget
                   </span>
-                  <span className="text-orange-400 font-medium">${totalBudget}</span>
+                  <span className="text-orange-400 font-medium">₹{totalBudget}</span>
                 </div>
               </div>
             </motion.div>
@@ -516,12 +516,12 @@ export default function SharedTripPage() {
                       className="flex items-center justify-between py-2 border-b border-white/5 last:border-0"
                     >
                       <span className="text-slate-400">{expense.description}</span>
-                      <span className="text-white font-medium">${expense.amount}</span>
+                      <span className="text-white font-medium">₹{expense.amount}</span>
                     </div>
                   ))}
                   <div className="flex items-center justify-between pt-2 mt-2 border-t border-white/10">
                     <span className="text-white font-medium">Total</span>
-                    <span className="text-orange-400 font-bold">${trip.budgets[0].totalAmount}</span>
+                    <span className="text-orange-400 font-bold">₹{trip.budgets[0].totalAmount}</span>
                   </div>
                 </div>
               </motion.div>

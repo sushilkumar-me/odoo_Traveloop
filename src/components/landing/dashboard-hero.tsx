@@ -7,7 +7,7 @@ import { useSession } from "next-auth/react";
 const stats = [
   { icon: MapPin, label: "Destinations", value: "12", color: "text-orange-400" },
   { icon: Calendar, label: "Upcoming", value: "3", color: "text-teal-400" },
-  { icon: Wallet, label: "Total Budget", value: "$8,450", color: "text-purple-400" },
+  { icon: Wallet, label: "Total Budget", value: "₹8,450", color: "text-purple-400" },
   { icon: TrendingUp, label: "Planned", value: "28 days", color: "text-blue-400" },
 ];
 
@@ -80,7 +80,7 @@ export function DashboardHero() {
             <div className="flex items-center gap-3">
               <div className="text-right">
                 <p className="text-slate-400 text-sm">Budget</p>
-                <p className="text-white font-bold text-xl">$2,400</p>
+                <p className="text-white font-bold text-xl">₹2,400</p>
               </div>
               <div className="px-4 py-2 rounded-xl bg-orange-500/20 border border-orange-500/30">
                 <span className="text-orange-400 text-sm font-medium">14 days</span>

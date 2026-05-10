@@ -34,8 +34,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { setTripBudget, addExpense } from "@/lib/actions/budget-actions";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
-const CURRENCY = "$"; // Use user's currency ideally, but standardizing to $ for display if mixed
+const CURRENCY = "₹"; // Use user's currency ideally, but standardizing to ₹ for display if mixed
 const COLORS = ["#3b82f6", "#8b5cf6", "#f59e0b", "#10b981", "#ec4899", "#94a3b8", "#f43f5e", "#14b8a6"];
 
 interface BudgetClientProps {
@@ -76,6 +77,7 @@ export default function BudgetClient({
   overBudgetDays,
   tripId,
 }: BudgetClientProps) {
+  const router = useRouter();
   const [isEditingBudget, setIsEditingBudget] = useState(false);
   const [budgetInput, setBudgetInput] = useState(totalBudget > 0 ? totalBudget.toString() : "");
   
@@ -87,24 +89,34 @@ export default function BudgetClient({
     e.preventDefault();
     if (!tripId) return;
     setIsSubmitting(true);
-    await setTripBudget(tripId, Number(budgetInput));
+    const res = await setTripBudget(tripId, Number(budgetInput));
+    if (!res.success) {
+      console.error("Failed to set budget", res.error);
+      alert("Failed to set budget: " + res.error);
+    }
     setIsEditingBudget(false);
     setIsSubmitting(false);
+    router.refresh();
   };
 
   const handleAddExpense = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!tripId) return;
     setIsSubmitting(true);
-    await addExpense(tripId, {
+    const res = await addExpense(tripId, {
       amount: Number(expenseForm.amount),
       description: expenseForm.description,
       category: expenseForm.category,
       date: expenseForm.date,
     });
+    if (!res.success) {
+      console.error("Failed to add expense", res.error);
+      alert("Failed to add expense: " + res.error);
+    }
     setShowExpenseForm(false);
     setExpenseForm({ amount: "", description: "", category: "Transport", date: new Date().toISOString().split('T')[0] });
     setIsSubmitting(false);
+    router.refresh();
   };
 
   if (totalBudget === 0 && totalCost === 0 && !isEditingBudget && !showExpenseForm) {
@@ -126,9 +138,11 @@ export default function BudgetClient({
               Add First Expense
             </Button>
             {tripId && (
-              <Link href={`/dashboard/trips/${tripId}`}>
-                <Button variant="ghost" className="w-full text-gray-400">Back to Trip</Button>
-              </Link>
+              <Button asChild variant="ghost" className="w-full text-gray-400">
+  <Link href={`/dashboard/trips/${tripId}`}>
+    Back to Trip
+  </Link>
+</Button>
             )}
           </div>
         </Card>
@@ -143,12 +157,14 @@ export default function BudgetClient({
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
           <div>
             {tripId && (
-              <Link href={`/dashboard/trips/${tripId}`}>
-                <Button variant="ghost" className="gap-2 text-gray-600 hover:text-gray-900 -ml-2 mb-4">
+              <Button asChild variant="ghost" className="gap-2 text-gray-600 hover:text-gray-900 -ml-2 mb-4">
+  <Link href={`/dashboard/trips/${tripId}`}>
+    
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-arrow-left"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
                   Back to Itinerary
-                </Button>
-              </Link>
+                
+  </Link>
+</Button>
             )}
             <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
               Trip Budget & Cost Breakdown

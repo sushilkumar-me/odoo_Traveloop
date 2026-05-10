@@ -446,7 +446,7 @@ export default function ActivitySearchPage() {
                     <div className="flex items-center gap-1 text-orange-400">
                       <DollarSign className="h-4 w-4" />
                       <span className="text-white font-bold">
-                        {activity.cost === 0 ? "Free" : `$${activity.cost}`}
+                        {activity.cost === 0 ? "Free" : `?${activity.cost}`}
                       </span>
                     </div>
                   </div>
@@ -526,7 +526,7 @@ export default function ActivitySearchPage() {
                         <span className="text-sm">Cost</span>
                       </div>
                       <p className="text-xl font-bold text-white">
-                        {selectedActivity.cost === 0 ? "Free" : `$${selectedActivity.cost}`}
+                        {selectedActivity.cost === 0 ? "Free" : `?${selectedActivity.cost}`}
                       </p>
                     </div>
 

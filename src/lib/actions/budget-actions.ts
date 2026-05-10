@@ -10,9 +10,12 @@ export async function setTripBudget(tripId: string, amount: number) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) throw new Error("Unauthorized");
 
+    const user = await db.user.findUnique({ where: { email: session.user.email } });
+    if (!user) throw new Error("User not found");
+
     // Check if budget exists for this trip
     const existingBudget = await db.budget.findFirst({
-      where: { tripId },
+      where: { tripId, userId: user.id },
     });
 
     if (existingBudget) {
@@ -23,10 +26,11 @@ export async function setTripBudget(tripId: string, amount: number) {
     } else {
       await db.budget.create({
         data: {
-          tripId,
+          trip: { connect: { id: tripId } },
+          user: { connect: { id: user.id } },
           name: "Main Budget",
           totalAmount: amount,
-          currency: "USD",
+          currency: "INR",
         },
       });
     }
@@ -52,14 +56,18 @@ export async function addExpense(
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) throw new Error("Unauthorized");
 
+    const user = await db.user.findUnique({ where: { email: session.user.email } });
+    if (!user) throw new Error("User not found");
+
     let budget = await db.budget.findFirst({
-      where: { tripId },
+      where: { tripId, userId: user.id },
     });
 
     if (!budget) {
       budget = await db.budget.create({
         data: {
-          tripId,
+          trip: { connect: { id: tripId } },
+          user: { connect: { id: user.id } },
           name: "Main Budget",
           totalAmount: 0,
         },
@@ -68,7 +76,8 @@ export async function addExpense(
 
     await db.expense.create({
       data: {
-        budgetId: budget.id,
+        budget: { connect: { id: budget.id } },
+        user: { connect: { id: user.id } },
         amount: data.amount,
         description: data.description,
         category: data.category,

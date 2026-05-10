@@ -15,7 +15,7 @@ const budgetCards = [
   {
     icon: Wallet,
     label: "Total Budget",
-    value: `$${budgetData.totalBudget.toLocaleString("en-US")}`,
+    value: `?${budgetData.totalBudget.toLocaleString("en-US")}`,
     subtext: "Across 4 trips",
     color: "text-orange-400",
     bg: "bg-orange-500/10",
@@ -23,7 +23,7 @@ const budgetCards = [
   {
     icon: TrendingDown,
     label: "Spent",
-    value: `$${budgetData.spent.toLocaleString("en-US")}`,
+    value: `?${budgetData.spent.toLocaleString("en-US")}`,
     subtext: "67% used",
     color: "text-teal-400",
     bg: "bg-teal-500/10",
@@ -31,7 +31,7 @@ const budgetCards = [
   {
     icon: PiggyBank,
     label: "Remaining",
-    value: `$${budgetData.remaining.toLocaleString("en-US")}`,
+    value: `?${budgetData.remaining.toLocaleString("en-US")}`,
     subtext: "33% left",
     color: "text-purple-400",
     bg: "bg-purple-500/10",
@@ -39,7 +39,7 @@ const budgetCards = [
   {
     icon: DollarSign,
     label: "Avg Daily",
-    value: `$${budgetData.avgDaily}`,
+    value: `?${budgetData.avgDaily}`,
     subtext: "Per trip day",
     color: "text-blue-400",
     bg: "bg-blue-500/10",
@@ -118,8 +118,8 @@ export function BudgetHighlights() {
               <ProgressRing progress={67} color="orange" />
             </div>
             <div className="mt-4 flex justify-between text-sm">
-              <span className="text-slate-400">Spent: $8,420</span>
-              <span className="text-slate-400">Left: $4,080</span>
+              <span className="text-slate-400">Spent: ₹8,420</span>
+              <span className="text-slate-400">Left: ₹4,080</span>
             </div>
           </div>
 

@@ -19,7 +19,7 @@ model User {
   image         String?
   bio           String?   @db.Text
   language      String    @default("en")
-  currency      String    @default("USD")
+  currency      String    @default("INR")
   travelStyle   String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -127,7 +127,7 @@ model Activity {
   imageUrl      String?
   duration      String?
   cost          Float?
-  currency      String   @default("USD")
+  currency      String   @default("INR")
   rating        Float    @default(0)
   categoryId    String?
   category      ActivityCategory? @relation(fields: [categoryId], references: [id])
@@ -237,7 +237,7 @@ model Budget {
   id          String   @id @default(cuid())
   name        String
   totalAmount Float
-  currency    String   @default("USD")
+  currency    String   @default("INR")
   tripId      String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
