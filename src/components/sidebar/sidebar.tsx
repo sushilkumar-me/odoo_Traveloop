@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils/cn";
-import { Plane, LayoutDashboard, Map, User, Settings, Search, Globe, Users } from "lucide-react";
+import { Plane, LayoutDashboard, Map, User, Settings, Search, Globe, Users, FileText } from "lucide-react";
 
 const mainNavItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
@@ -11,6 +11,7 @@ const mainNavItems = [
   { icon: Globe, label: "Discover Activities", href: "/search/activities" },
   { icon: Users, label: "Community", href: "/community" },
   { icon: Map, label: "My Trips", href: "/dashboard/trips" },
+  { icon: FileText, label: "Notes", href: "/notes" },
   { icon: User, label: "Profile", href: "/profile" },
   { icon: Settings, label: "Settings", href: "/dashboard/settings" },
 ];
