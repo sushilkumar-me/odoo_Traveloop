@@ -3,11 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils/cn";
-import { Plane, LayoutDashboard, Map, Calendar, User, Settings } from "lucide-react";
+import { Plane, LayoutDashboard, Map, User, Settings } from "lucide-react";
 
 const mainNavItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
-  { icon: Map, label: "Trips", href: "/dashboard/trips" },
+  { icon: Map, label: "My Trips", href: "/my-trips" },
   { icon: User, label: "Profile", href: "/dashboard/profile" },
   { icon: Settings, label: "Settings", href: "/dashboard/settings" },
 ];

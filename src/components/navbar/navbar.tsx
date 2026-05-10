@@ -25,7 +25,7 @@ export function Navbar() {
             <Input
               type="search"
               placeholder="Search trips, activities..."
-              className="w-full pl-12 pr-4 py-3 bg-gray-50 border-0 rounded-full text-sm focus:ring-2 focus:ring-[#ff7a1a]/20 focus:bg-white transition-all"
+              className="w-full pl-12 pr-4 py-3 bg-gray-50 border-0 rounded-xl text-sm focus:ring-2 focus:ring-[#ff7a1a]/20 focus:bg-white transition-all"
             />
           </div>
         </div>
@@ -36,7 +36,7 @@ export function Navbar() {
           <Button
             variant="ghost"
             size="icon"
-            className="relative hover:bg-gray-100 rounded-full"
+            className="relative hover:bg-gray-100 rounded-xl"
           >
             <Bell className="h-5 w-5 text-gray-600" />
             <span className="absolute top-2 right-2 w-2 h-2 bg-[#ff7a1a] rounded-full" />
@@ -46,9 +46,9 @@ export function Navbar() {
           <div className="relative">
             <button
               onClick={() => setShowUserMenu(!showUserMenu)}
-              className="flex items-center gap-3 p-2 rounded-full hover:bg-gray-100 transition-colors"
+              className="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-100 transition-colors"
             >
-              <Avatar className="h-10 w-10 ring-2 ring-gray-100">
+              <Avatar className="h-10 w-10 ring-4 ring-orange-100">
                 <AvatarFallback className="bg-gradient-to-br from-[#ff7a1a] to-[#ff9f5a] text-white font-semibold">
                   {initials}
                 </AvatarFallback>
@@ -57,7 +57,7 @@ export function Navbar() {
             </button>
 
             {showUserMenu && (
-              <div className="absolute right-0 mt-3 w-56 bg-white border rounded-2xl shadow-xl shadow-gray-200/50 overflow-hidden z-50">
+              <div className="absolute right-0 mt-3 w-56 bg-white border border-gray-100 rounded-xl shadow-xl overflow-hidden z-50">
                 <div className="px-4 py-3 bg-gray-50 border-b">
                   <p className="font-semibold text-gray-900">{userName}</p>
                   <p className="text-sm text-gray-500">{userEmail}</p>

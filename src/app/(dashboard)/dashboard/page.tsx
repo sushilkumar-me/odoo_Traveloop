@@ -14,10 +14,9 @@ import {
   Calendar,
   Wallet,
   Users,
-  ArrowRightLeft,
   SlidersHorizontal,
   ArrowUpDown,
-  X,
+  Plane,
 } from "lucide-react";
 
 export default async function DashboardPage() {
@@ -64,10 +63,16 @@ export default async function DashboardPage() {
   ];
 
   return (
-    <div className="space-y-8 -mx-6 -my-6 p-6 lg:p-8">
+    <div className="space-y-8">
       {/* Header Section */}
       <div className="flex items-start justify-between gap-6">
         <div>
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#ff7a1a] to-[#ff9f5a] flex items-center justify-center">
+              <Plane className="h-5 w-5 text-white" />
+            </div>
+            <span className="text-sm text-[#ff7a1a] font-medium">Travel Dashboard</span>
+          </div>
           <h1 className="text-4xl font-bold text-gray-900 mb-2">Dashboard</h1>
           <p className="text-gray-500 text-lg">
             Welcome back, <span className="font-semibold text-gray-700">{userName}</span>! Here&apos;s your travel overview.
@@ -98,29 +103,47 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* Hero Banner */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
-        <div
-          className="absolute inset-0 opacity-40"
-          style={{
-            backgroundImage: "url('https://images.unsplash.com/photo-1488085061387-422e29b40080?w=1200&h=400&fit=crop')",
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-          }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-gray-900/90 via-gray-900/70 to-transparent" />
-        <div className="relative px-10 py-16">
-          <div className="max-w-xl">
-            <h2 className="text-4xl font-bold text-white mb-4">Explore Your Next Journey</h2>
-            <p className="text-gray-300 text-lg mb-6">Plan unforgettable trips with AI assistance</p>
-            <Link href="/plan-trip">
-              <Button className="bg-[#ff7a1a] hover:bg-[#e66b15] text-white font-semibold px-8 py-3 rounded-full shadow-lg shadow-orange-500/30 transition-all">
-                Get Started
-                <ArrowRightLeft className="h-4 w-4 ml-2" />
-              </Button>
-            </Link>
-          </div>
-        </div>
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="border-0 shadow-lg shadow-gray-200/50">
+          <CardContent className="p-6">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#ff7a1a] to-[#ff9f5a] flex items-center justify-center mb-4">
+              <MapPin className="h-6 w-6 text-white" />
+            </div>
+            <p className="text-3xl font-bold text-gray-900 mb-1">{totalTrips}</p>
+            <p className="text-sm text-gray-500">Total Trips</p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-0 shadow-lg shadow-gray-200/50">
+          <CardContent className="p-6">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center mb-4">
+              <Calendar className="h-6 w-6 text-white" />
+            </div>
+            <p className="text-3xl font-bold text-gray-900 mb-1">{upcomingTrips}</p>
+            <p className="text-sm text-gray-500">Upcoming Trips</p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-0 shadow-lg shadow-gray-200/50">
+          <CardContent className="p-6">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center mb-4">
+              <Wallet className="h-6 w-6 text-white" />
+            </div>
+            <p className="text-3xl font-bold text-gray-900 mb-1">${totalBudget.toLocaleString()}</p>
+            <p className="text-sm text-gray-500">Total Budget</p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-0 shadow-lg shadow-gray-200/50">
+          <CardContent className="p-6">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center mb-4">
+              <Users className="h-6 w-6 text-white" />
+            </div>
+            <p className="text-3xl font-bold text-gray-900 mb-1">${totalSpent.toLocaleString()}</p>
+            <p className="text-sm text-gray-500">Total Spent</p>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Search + Filter Row */}
@@ -130,21 +153,21 @@ export default async function DashboardPage() {
           <Input
             type="search"
             placeholder="Search destinations..."
-            className="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-full text-sm focus:ring-2 focus:ring-[#ff7a1a]/20 focus:border-[#ff7a1a] transition-all"
+            className="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[#ff7a1a]/20 focus:border-[#ff7a1a] transition-all"
           />
         </div>
 
-        <Button variant="outline" className="gap-2 px-5 py-3 rounded-full border-gray-200 hover:border-[#ff7a1a] hover:text-[#ff7a1a] transition-colors">
+        <Button variant="outline" className="gap-2 px-5 py-3 rounded-xl border-gray-200 hover:border-[#ff7a1a] hover:text-[#ff7a1a] transition-colors">
           <Users className="h-4 w-4" />
           Group By
         </Button>
 
-        <Button variant="outline" className="gap-2 px-5 py-3 rounded-full border-gray-200 hover:border-[#ff7a1a] hover:text-[#ff7a1a] transition-colors">
+        <Button variant="outline" className="gap-2 px-5 py-3 rounded-xl border-gray-200 hover:border-[#ff7a1a] hover:text-[#ff7a1a] transition-colors">
           <SlidersHorizontal className="h-4 w-4" />
           Filter
         </Button>
 
-        <Button variant="outline" className="gap-2 px-5 py-3 rounded-full border-gray-200 hover:border-[#ff7a1a] hover:text-[#ff7a1a] transition-colors">
+        <Button variant="outline" className="gap-2 px-5 py-3 rounded-xl border-gray-200 hover:border-[#ff7a1a] hover:text-[#ff7a1a] transition-colors">
           <ArrowUpDown className="h-4 w-4" />
           Sort By
         </Button>
@@ -177,7 +200,7 @@ export default async function DashboardPage() {
 
       {/* Previous Trips */}
       <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Previous Trips</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Recent Trips</h2>
         {totalTrips === 0 ? (
           <Card className="bg-white rounded-3xl border border-gray-100 shadow-sm">
             <CardContent className="p-12 text-center">
@@ -187,7 +210,7 @@ export default async function DashboardPage() {
               <h3 className="text-xl font-semibold text-gray-900 mb-2">No trips yet</h3>
               <p className="text-gray-500 mb-6">Start planning your first adventure!</p>
               <Link href="/plan-trip">
-                <Button className="bg-[#ff7a1a] hover:bg-[#e66b15] text-white font-semibold px-6 py-3 rounded-full">
+                <Button className="bg-[#ff7a1a] hover:bg-[#e66b15] text-white font-semibold px-6 py-3 rounded-xl">
                   Plan a Trip
                 </Button>
               </Link>
