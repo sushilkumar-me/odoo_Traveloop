@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { User, Mail, Lock, Plane, Loader2 } from "lucide-react";
+import { User, Mail, Phone, MapPin, Globe, Lock, Plane, Loader2, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -14,13 +14,15 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 const registerSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
+  firstName: z.string().min(2, "First name is required"),
+  lastName: z.string().min(2, "Last name is required"),
   email: z.string().email("Please enter a valid email"),
+  phone: z.string().min(10, "Please enter a valid phone number"),
+  city: z.string().min(2, "City is required"),
+  country: z.string().min(2, "Country is required"),
   password: z
     .string()
-    .min(8, "Password must be at least 8 characters")
-    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
-    .regex(/[0-9]/, "Password must contain at least one number"),
+    .min(8, "Password must be at least 8 characters"),
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
@@ -32,13 +34,19 @@ type RegisterFormData = z.infer<typeof registerSchema>;
 export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const router = useRouter();
 
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      name: "",
+      firstName: "",
+      lastName: "",
       email: "",
+      phone: "",
+      city: "",
+      country: "",
       password: "",
       confirmPassword: "",
     },
@@ -53,9 +61,12 @@ export default function RegisterPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: data.name,
+          name: `${data.firstName} ${data.lastName}`,
           email: data.email,
           password: data.password,
+          phone: data.phone,
+          city: data.city,
+          country: data.country,
         }),
       });
 
@@ -75,22 +86,22 @@ export default function RegisterPage() {
 
   return (
     <Card className="bg-white/95 backdrop-blur-xl border border-gray-200/50 shadow-2xl">
-      <CardContent className="p-8">
+      <CardContent className="p-6 sm:p-8">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="text-center mb-8"
+          className="text-center mb-6"
         >
           <motion.div
-            className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-blue-500 mb-4 shadow-lg shadow-violet-500/25"
+            className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-500 to-blue-500 mb-3 shadow-lg shadow-violet-500/25"
             whileHover={{ scale: 1.05 }}
           >
-            <Plane className="w-8 h-8 text-white" />
+            <Plane className="w-7 h-7 text-white" />
           </motion.div>
-          <h1 className="text-3xl font-bold text-gray-900 font-serif mb-2">Create Account</h1>
-          <p className="text-gray-500">Start your journey with Traveloop</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 font-serif mb-1">Create Account</h1>
+          <p className="text-gray-500 text-sm">Start your journey with Traveloop</p>
         </motion.div>
 
         <Form {...form}>
@@ -105,33 +116,64 @@ export default function RegisterPage() {
               </motion.div>
             )}
 
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-700 font-medium">Full Name</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                        <Input
-                          placeholder="John Doe"
-                          className="bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400 pl-10 focus:border-violet-500 focus:ring-violet-500/20 h-11"
-                          {...field}
-                        />
-                      </div>
-                    </FormControl>
-                    <FormMessage className="text-red-500" />
-                  </FormItem>
-                )}
-              />
-            </motion.div>
+            {/* Name Row - 2 columns */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.15 }}
+              >
+                <FormField
+                  control={form.control}
+                  name="firstName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-gray-700 text-sm font-medium">First Name</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                          <Input
+                            placeholder="John"
+                            className="bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400 pl-10 h-10 rounded-lg focus:border-violet-500 focus:ring-violet-500/20 text-sm"
+                            {...field}
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage className="text-red-500 text-xs" />
+                    </FormItem>
+                  )}
+                />
+              </motion.div>
 
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                <FormField
+                  control={form.control}
+                  name="lastName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-gray-700 text-sm font-medium">Last Name</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                          <Input
+                            placeholder="Doe"
+                            className="bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400 pl-10 h-10 rounded-lg focus:border-violet-500 focus:ring-violet-500/20 text-sm"
+                            {...field}
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage className="text-red-500 text-xs" />
+                    </FormItem>
+                  )}
+                />
+              </motion.div>
+            </div>
+
+            {/* Email */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -142,24 +184,25 @@ export default function RegisterPage() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-gray-700 font-medium">Email</FormLabel>
+                    <FormLabel className="text-gray-700 text-sm font-medium">Email Address</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                         <Input
                           type="email"
-                          placeholder="you@example.com"
-                          className="bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400 pl-10 focus:border-violet-500 focus:ring-violet-500/20 h-11"
+                          placeholder="john.doe@example.com"
+                          className="bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400 pl-10 h-10 rounded-lg focus:border-violet-500 focus:ring-violet-500/20 text-sm"
                           {...field}
                         />
                       </div>
                     </FormControl>
-                    <FormMessage className="text-red-500" />
+                    <FormMessage className="text-red-500 text-xs" />
                   </FormItem>
                 )}
               />
             </motion.div>
 
+            {/* Phone */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -167,69 +210,171 @@ export default function RegisterPage() {
             >
               <FormField
                 control={form.control}
-                name="password"
+                name="phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-gray-700 font-medium">Password</FormLabel>
+                    <FormLabel className="text-gray-700 text-sm font-medium">Phone Number</FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                         <Input
-                          type="password"
-                          placeholder="Create a strong password"
-                          className="bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400 pl-10 focus:border-violet-500 focus:ring-violet-500/20 h-11"
+                          type="tel"
+                          placeholder="+1 234 567 8900"
+                          className="bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400 pl-10 h-10 rounded-lg focus:border-violet-500 focus:ring-violet-500/20 text-sm"
                           {...field}
                         />
                       </div>
                     </FormControl>
-                    <FormMessage className="text-red-500" />
+                    <FormMessage className="text-red-500 text-xs" />
                   </FormItem>
                 )}
               />
             </motion.div>
 
+            {/* City & Country Row - 2 columns */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.35 }}
+              >
+                <FormField
+                  control={form.control}
+                  name="city"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-gray-700 text-sm font-medium">City</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                          <Input
+                            placeholder="New York"
+                            className="bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400 pl-10 h-10 rounded-lg focus:border-violet-500 focus:ring-violet-500/20 text-sm"
+                            {...field}
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage className="text-red-500 text-xs" />
+                    </FormItem>
+                  )}
+                />
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.4 }}
+              >
+                <FormField
+                  control={form.control}
+                  name="country"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-gray-700 text-sm font-medium">Country</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                          <Input
+                            placeholder="United States"
+                            className="bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400 pl-10 h-10 rounded-lg focus:border-violet-500 focus:ring-violet-500/20 text-sm"
+                            {...field}
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage className="text-red-500 text-xs" />
+                    </FormItem>
+                  )}
+                />
+              </motion.div>
+            </div>
+
+            {/* Password */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.35 }}
+              transition={{ delay: 0.45 }}
+            >
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-gray-700 text-sm font-medium">Password</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <Input
+                          type={showPassword ? "text" : "password"}
+                          placeholder="Min. 8 characters"
+                          className="bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400 pl-10 pr-10 h-10 rounded-lg focus:border-violet-500 focus:ring-violet-500/20 text-sm"
+                          {...field}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                        >
+                          {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    </FormControl>
+                    <FormMessage className="text-red-500 text-xs" />
+                  </FormItem>
+                )}
+              />
+            </motion.div>
+
+            {/* Confirm Password */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.5 }}
             >
               <FormField
                 control={form.control}
                 name="confirmPassword"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-gray-700 font-medium">Confirm Password</FormLabel>
+                    <FormLabel className="text-gray-700 text-sm font-medium">Confirm Password</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                         <Input
-                          type="password"
-                          placeholder="Confirm your password"
-                          className="bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400 pl-10 focus:border-violet-500 focus:ring-violet-500/20 h-11"
+                          type={showConfirmPassword ? "text" : "password"}
+                          placeholder="Re-enter your password"
+                          className="bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400 pl-10 pr-10 h-10 rounded-lg focus:border-violet-500 focus:ring-violet-500/20 text-sm"
                           {...field}
                         />
+                        <button
+                          type="button"
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                        >
+                          {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
                       </div>
                     </FormControl>
-                    <FormMessage className="text-red-500" />
+                    <FormMessage className="text-red-500 text-xs" />
                   </FormItem>
                 )}
               />
             </motion.div>
 
+            {/* Submit Button */}
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
+              transition={{ delay: 0.55 }}
             >
               <Button
                 type="submit"
-                className="w-full h-12 bg-gradient-to-r from-violet-500 to-blue-500 hover:from-violet-600 hover:to-blue-600 text-white font-medium rounded-lg transition-all duration-300 hover:shadow-lg hover:shadow-violet-500/25"
+                className="w-full h-11 bg-gradient-to-r from-violet-500 to-blue-500 hover:from-violet-600 hover:to-blue-600 text-white font-medium rounded-lg transition-all duration-300 hover:shadow-lg hover:shadow-violet-500/25 text-sm"
                 disabled={isLoading}
               >
                 {isLoading ? (
                   <span className="flex items-center gap-2">
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Creating account...
+                    Creating Account...
                   </span>
                 ) : (
                   "Create Account"
@@ -239,16 +384,17 @@ export default function RegisterPage() {
           </form>
         </Form>
 
+        {/* Sign in link */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="mt-6 text-center"
+          transition={{ delay: 0.6 }}
+          className="mt-5 text-center"
         >
-          <span className="text-gray-500">Already have an account? </span>
+          <span className="text-gray-500 text-sm">Already have an account? </span>
           <Link
             href="/login"
-            className="text-blue-600 hover:text-blue-700 font-medium transition-colors hover:underline"
+            className="text-blue-600 hover:text-blue-700 font-medium transition-colors hover:underline text-sm"
           >
             Sign in
           </Link>
