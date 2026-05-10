@@ -3,12 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils/cn";
-import { Plane, LayoutDashboard, Map, User, Settings, Search, Globe } from "lucide-react";
+import { Plane, LayoutDashboard, Map, User, Settings, Search, Globe, Users } from "lucide-react";
 
 const mainNavItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
   { icon: Search, label: "Explore Cities", href: "/search/cities" },
   { icon: Globe, label: "Discover Activities", href: "/search/activities" },
+  { icon: Users, label: "Community", href: "/community" },
   { icon: Map, label: "My Trips", href: "/dashboard/trips" },
   { icon: User, label: "Profile", href: "/profile" },
   { icon: Settings, label: "Settings", href: "/dashboard/settings" },
