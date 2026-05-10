@@ -156,10 +156,9 @@ export default async function TripsPage() {
             ) || 0;
 
             return (
-              <Link
+              <div
                 key={trip.id}
-                href={`/dashboard/trips/${trip.id}`}
-                className="group bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-sm hover:shadow-xl hover:shadow-gray-200/50 transition-all duration-300 hover:-translate-y-1"
+                className="group bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-sm hover:shadow-xl hover:shadow-gray-200/50 transition-all duration-300 hover:-translate-y-1 flex flex-col"
               >
                 {/* Cover Image */}
                 <div className="relative aspect-video overflow-hidden">
@@ -225,25 +224,37 @@ export default async function TripsPage() {
                       </div>
                     )}
 
-                    {budget > 0 && (
-                      <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
-                        <div className="flex items-center gap-1">
-                          <Wallet className="h-4 w-4 text-[#ff7a1a]" />
-                          <span className="font-semibold text-gray-700">
-                            ${budget.toLocaleString("en-US")}
-                          </span>
-                          <span className="text-gray-400">budget</span>
-                        </div>
-                        {spent > 0 && (
-                          <span className="text-xs text-gray-400">
-                            ${spent.toLocaleString("en-US")} spent
-                          </span>
-                        )}
+                    <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+                      <div className="flex items-center gap-1">
+                        <Wallet className="h-4 w-4 text-[#ff7a1a]" />
+                        <span className="font-semibold text-gray-700">
+                          {budget > 0 ? `$${budget.toLocaleString("en-US")}` : "No budget set"}
+                        </span>
+                        {budget > 0 && <span className="text-gray-400">budget</span>}
                       </div>
-                    )}
+                      {spent > 0 && (
+                        <span className="text-xs text-gray-400">
+                          ${spent.toLocaleString("en-US")} spent
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Footer Actions */}
+                  <div className="flex items-center gap-2 mt-4 border-t border-gray-100 pt-4">
+                    <Link href={`/dashboard/trips/${trip.id}`} className="flex-1">
+                      <Button size="sm" variant="outline" className="w-full gap-2">
+                        View Itinerary
+                      </Button>
+                    </Link>
+                    <Link href={`/dashboard/trips/${trip.id}/budget`} title="Budget Dashboard">
+                      <Button size="sm" variant="ghost" className="text-gray-500 hover:text-[#ff7a1a] hover:bg-orange-50 p-2">
+                        <Wallet className="h-4 w-4" />
+                      </Button>
+                    </Link>
                   </div>
                 </div>
-              </Link>
+              </div>
             );
           })}
         </div>

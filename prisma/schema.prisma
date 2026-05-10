@@ -136,6 +136,8 @@ model Activity {
   isIndoor     Boolean?
   isFamilyFriendly Boolean?
   adventureLevel String? // easy, moderate, challenging
+  date         DateTime? // Added for day-wise itinerary
+  time         String?   // Added for time-specific activities
 
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt

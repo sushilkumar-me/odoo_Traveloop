@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { deleteTrip } from "@/lib/actions/trip-actions";
+import { deleteTrip, addCityToTrip, addActivityToCity, reorderCities, removeCityFromTrip, removeActivity } from "@/lib/actions/trip-actions";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -17,10 +17,13 @@ import {
   TrendingUp,
   Plus,
   Plane,
+  ChevronUp,
+  ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 
 // ── Types inferred from Prisma includes ──────────────────────────────────────
 interface Activity {
@@ -30,6 +33,8 @@ interface Activity {
   location: string | null;
   duration: string | null;
   cost: number | null;
+  date: Date | null;
+  time: string | null;
   rating: number;
   createdAt: Date;
 }
@@ -103,10 +108,27 @@ function daysBetween(a: Date | string, b: Date | string) {
   );
 }
 
+function getDaysInCity(startDate: Date, endDate: Date) {
+  const dates = [];
+  let current = new Date(startDate);
+  const end = new Date(endDate);
+  while (current <= end) {
+    dates.push(new Date(current));
+    current.setDate(current.getDate() + 1);
+  }
+  return dates;
+}
+
 // ── Component ────────────────────────────────────────────────────────────────
 export function ItineraryView({ trip, allUserTrips }: ItineraryViewProps) {
   const router = useRouter();
   const [deleting, setDeleting] = useState(false);
+  const [isAddingCity, setIsAddingCity] = useState(false);
+  const [cityForm, setCityForm] = useState({ name: "", country: "", startDate: "", endDate: "" });
+
+  // Adding activity state tracking cityId and specifically which date they are adding it to
+  const [addingActivityTo, setAddingActivityTo] = useState<{ cityId: string; dateStr: string | "unassigned" } | null>(null);
+  const [activityForm, setActivityForm] = useState({ name: "", description: "", location: "", duration: "", cost: "", time: "" });
 
   const now = new Date();
   const isPast = new Date(trip.endDate) < now;
@@ -135,6 +157,141 @@ export function ItineraryView({ trip, allUserTrips }: ItineraryViewProps) {
     router.push("/dashboard/trips");
   };
 
+  const handleAddCity = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await addCityToTrip(trip.id, {
+      name: cityForm.name,
+      country: cityForm.country,
+      startDate: new Date(cityForm.startDate),
+      endDate: new Date(cityForm.endDate),
+    });
+    setIsAddingCity(false);
+    setCityForm({ name: "", country: "", startDate: "", endDate: "" });
+  };
+
+  const handleDeleteCity = async (cityId: string, cityName: string) => {
+    if (!confirm(`Delete "${cityName}" and all its activities?`)) return;
+    await removeCityFromTrip(cityId, trip.id);
+  };
+
+  const handleAddActivity = async (e: React.FormEvent, cityId: string, dateStr: string | "unassigned") => {
+    e.preventDefault();
+    await addActivityToCity(cityId, trip.id, {
+      name: activityForm.name,
+      description: activityForm.description,
+      location: activityForm.location,
+      duration: activityForm.duration,
+      cost: activityForm.cost ? Number(activityForm.cost) : undefined,
+      date: dateStr !== "unassigned" ? dateStr : undefined,
+      time: activityForm.time,
+    });
+    setAddingActivityTo(null);
+    setActivityForm({ name: "", description: "", location: "", duration: "", cost: "", time: "" });
+  };
+
+  const handleDeleteActivity = async (activityId: string) => {
+    if (!confirm("Remove this activity?")) return;
+    await removeActivity(activityId, trip.id);
+  };
+
+  const moveCity = async (index: number, direction: 'up' | 'down') => {
+    const newCities = [...trip.cities];
+    if (direction === 'up' && index > 0) {
+      [newCities[index - 1], newCities[index]] = [newCities[index], newCities[index - 1]];
+    } else if (direction === 'down' && index < newCities.length - 1) {
+      [newCities[index], newCities[index + 1]] = [newCities[index + 1], newCities[index]];
+    } else return;
+    
+    await reorderCities(trip.id, newCities.map(c => c.id));
+  };
+
+  const renderActivityList = (activities: Activity[]) => {
+    if (activities.length === 0) {
+      return (
+        <p className="text-sm text-gray-400 italic px-4 py-2">
+          No activities planned for this day.
+        </p>
+      );
+    }
+    return (
+      <ul className="divide-y divide-gray-50">
+        {activities.sort((a, b) => (a.time || "").localeCompare(b.time || "")).map((act) => (
+          <li
+            key={act.id}
+            className="flex items-start gap-3 p-4 hover:bg-gray-50 transition-colors group"
+          >
+            <div className="w-2 h-2 rounded-full bg-[#ff7a1a] mt-1.5 shrink-0" />
+            <div className="flex-1 min-w-0">
+              <div className="flex justify-between items-start">
+                <p className="font-semibold text-gray-900 text-[15px]">{act.name.split('#')[0]}</p>
+                <div className="flex items-center gap-2">
+                  {act.time && (
+                    <Badge variant="outline" className="text-xs text-[#ff7a1a] border-[#ff7a1a]/30">
+                      {act.time}
+                    </Badge>
+                  )}
+                  <button 
+                    onClick={() => handleDeleteActivity(act.id)}
+                    className="text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                    title="Remove Activity"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+              {act.description && (
+                <p className="text-sm text-gray-600 mt-0.5 line-clamp-2">
+                  {act.description}
+                </p>
+              )}
+              <div className="flex items-center gap-4 mt-2 text-xs text-gray-500 font-medium flex-wrap">
+                {act.location && (
+                  <span className="flex items-center gap-1.5 bg-gray-100 px-2 py-1 rounded-md">
+                    <MapPin className="w-3.5 h-3.5 text-gray-400" />
+                    {act.location}
+                  </span>
+                )}
+                {act.duration && (
+                  <span className="flex items-center gap-1.5 bg-gray-100 px-2 py-1 rounded-md">
+                    <Clock className="w-3.5 h-3.5 text-gray-400" />
+                    {act.duration}
+                  </span>
+                )}
+                {act.cost != null && (
+                  <span className="flex items-center gap-1.5 bg-emerald-50 text-emerald-700 px-2 py-1 rounded-md">
+                    <Wallet className="w-3.5 h-3.5" />
+                    ${act.cost.toLocaleString("en-US")}
+                  </span>
+                )}
+              </div>
+            </div>
+          </li>
+        ))}
+      </ul>
+    );
+  };
+
+  const renderActivityForm = (cityId: string, dateStr: string | "unassigned") => {
+    return (
+      <div className="p-4 bg-orange-50/50 border-b border-gray-100">
+        <form onSubmit={(e) => handleAddActivity(e, cityId, dateStr)} className="space-y-3">
+          <Input required value={activityForm.name} onChange={(e) => setActivityForm({ ...activityForm, name: e.target.value })} placeholder="Activity Name (e.g. Louvre Museum)" />
+          <Input value={activityForm.description} onChange={(e) => setActivityForm({ ...activityForm, description: e.target.value })} placeholder="Short description..." />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            <Input type="time" value={activityForm.time} onChange={(e) => setActivityForm({ ...activityForm, time: e.target.value })} placeholder="Time" />
+            <Input value={activityForm.location} onChange={(e) => setActivityForm({ ...activityForm, location: e.target.value })} placeholder="Location" />
+            <Input value={activityForm.duration} onChange={(e) => setActivityForm({ ...activityForm, duration: e.target.value })} placeholder="Duration (e.g. 2h)" />
+            <Input type="number" value={activityForm.cost} onChange={(e) => setActivityForm({ ...activityForm, cost: e.target.value })} placeholder="Cost ($)" />
+          </div>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button type="button" variant="ghost" size="sm" onClick={() => setAddingActivityTo(null)}>Cancel</Button>
+            <Button type="submit" size="sm" className="bg-[#ff7a1a] hover:bg-[#e66b15] text-white">Add Activity</Button>
+          </div>
+        </form>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-8">
       {/* Back + Actions */}
@@ -145,15 +302,23 @@ export function ItineraryView({ trip, allUserTrips }: ItineraryViewProps) {
             All Trips
           </Button>
         </Link>
-        <Button
-          variant="ghost"
-          onClick={handleDelete}
-          disabled={deleting}
-          className="gap-2 text-gray-400 hover:text-red-500 hover:bg-red-50"
-        >
-          <Trash2 className="w-4 h-4" />
-          {deleting ? "Deleting…" : "Delete Trip"}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Link href={`/dashboard/trips/${trip.id}/budget`}>
+            <Button variant="outline" className="gap-2 text-gray-600 hover:text-gray-900">
+              <Wallet className="w-4 h-4" />
+              Budget Dashboard
+            </Button>
+          </Link>
+          <Button
+            variant="ghost"
+            onClick={handleDelete}
+            disabled={deleting}
+            className="gap-2 text-gray-400 hover:text-red-500 hover:bg-red-50"
+          >
+            <Trash2 className="w-4 h-4" />
+            {deleting ? "Deleting…" : "Delete Trip"}
+          </Button>
+        </div>
       </div>
 
       {/* Hero Card */}
@@ -254,95 +419,150 @@ export function ItineraryView({ trip, allUserTrips }: ItineraryViewProps) {
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
               <MapPin className="w-5 h-5 text-[#ff7a1a]" />
-              Cities & Itinerary
+              Day-by-Day Itinerary
             </h2>
+            <Button onClick={() => setIsAddingCity(!isAddingCity)} className="bg-[#ff7a1a] hover:bg-[#e66b15] text-white gap-2">
+              <Plus className="w-4 h-4" />
+              Add Stop
+            </Button>
           </div>
 
-          {trip.cities.length === 0 ? (
+          {/* Add City Form */}
+          {isAddingCity && (
+            <Card className="border border-[#ff7a1a]/20 shadow-md">
+              <CardContent className="p-5">
+                <form onSubmit={handleAddCity} className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium text-gray-700">City Name</label>
+                      <Input required value={cityForm.name} onChange={(e) => setCityForm({ ...cityForm, name: e.target.value })} placeholder="e.g. Paris" />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-700">Country</label>
+                      <Input required value={cityForm.country} onChange={(e) => setCityForm({ ...cityForm, country: e.target.value })} placeholder="e.g. France" />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-700">Start Date</label>
+                      <Input type="date" required value={cityForm.startDate} onChange={(e) => setCityForm({ ...cityForm, startDate: e.target.value })} />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-700">End Date</label>
+                      <Input type="date" required value={cityForm.endDate} onChange={(e) => setCityForm({ ...cityForm, endDate: e.target.value })} />
+                    </div>
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    <Button type="button" variant="ghost" onClick={() => setIsAddingCity(false)}>Cancel</Button>
+                    <Button type="submit" className="bg-[#ff7a1a] hover:bg-[#e66b15] text-white">Save City</Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          )}
+
+          {trip.cities.length === 0 && !isAddingCity ? (
             <Card className="border-dashed border-2 border-gray-200 shadow-none">
               <CardContent className="p-10 text-center">
                 <Globe className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-                <p className="text-gray-500 font-medium">No cities added yet</p>
+                <p className="text-gray-500 font-medium">No stops added yet</p>
                 <p className="text-sm text-gray-400 mt-1">
-                  Cities and activities will appear here once added.
+                  Click "Add Stop" to start building your interactive itinerary.
                 </p>
               </CardContent>
             </Card>
           ) : (
             <div className="space-y-4">
-              {trip.cities.map((city, idx) => (
-                <motion.div
-                  key={city.id}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: idx * 0.08 }}
-                >
-                  <Card className="border-0 shadow-md shadow-gray-200/50 overflow-hidden">
-                    <div className="flex items-center gap-4 p-5 border-b border-gray-100">
-                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#ff7a1a] to-[#ff9f5a] flex items-center justify-center text-white font-bold shrink-0">
-                        {idx + 1}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-gray-900">
-                          {city.name},{" "}
-                          <span className="text-gray-500 font-normal">{city.country}</span>
-                        </h3>
-                        <p className="text-xs text-gray-400 flex items-center gap-1 mt-0.5">
-                          <Calendar className="w-3 h-3" />
-                          {fmt(city.startDate)} → {fmt(city.endDate)}
-                        </p>
-                      </div>
-                    </div>
+              {trip.cities.map((city, idx) => {
+                const days = getDaysInCity(city.startDate, city.endDate);
+                const activitiesByDate = days.reduce((acc, date) => {
+                  const dStr = date.toISOString().split('T')[0];
+                  acc[dStr] = city.activities.filter(a => a.date && new Date(a.date).toISOString().split('T')[0] === dStr);
+                  return acc;
+                }, {} as Record<string, Activity[]>);
 
-                    <CardContent className="p-5">
-                      {city.activities.length === 0 ? (
-                        <p className="text-sm text-gray-400 italic">
-                          No activities added for this city.
-                        </p>
-                      ) : (
-                        <ul className="space-y-3">
-                          {city.activities.map((act) => (
-                            <li
-                              key={act.id}
-                              className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl"
-                            >
-                              <div className="w-2 h-2 rounded-full bg-[#ff7a1a] mt-1.5 shrink-0" />
-                              <div className="flex-1 min-w-0">
-                                <p className="font-medium text-gray-900 text-sm">{act.name}</p>
-                                {act.description && (
-                                  <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">
-                                    {act.description}
-                                  </p>
-                                )}
-                                <div className="flex items-center gap-3 mt-1.5 text-xs text-gray-400">
-                                  {act.location && (
-                                    <span className="flex items-center gap-1">
-                                      <MapPin className="w-3 h-3" />
-                                      {act.location}
-                                    </span>
-                                  )}
-                                  {act.duration && (
-                                    <span className="flex items-center gap-1">
-                                      <Clock className="w-3 h-3" />
-                                      {act.duration}
-                                    </span>
-                                  )}
-                                  {act.cost != null && (
-                                    <span className="flex items-center gap-1 text-emerald-600 font-medium">
-                                      <Wallet className="w-3 h-3" />
-                                      ${act.cost.toLocaleString("en-US")}
-                                    </span>
-                                  )}
-                                </div>
+                const unassignedActs = city.activities.filter(a => !a.date);
+
+                return (
+                  <motion.div
+                    key={city.id}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: idx * 0.08 }}
+                  >
+                    <Card className="border-0 shadow-md shadow-gray-200/50 overflow-hidden mb-6 group/city">
+                      <div className="flex items-center gap-4 p-5 border-b border-gray-100 bg-white">
+                        <div className="flex flex-col items-center justify-center pr-2 border-r border-gray-100">
+                          <button disabled={idx === 0} onClick={() => moveCity(idx, 'up')} className="text-gray-300 hover:text-[#ff7a1a] disabled:opacity-30 disabled:hover:text-gray-300">
+                            <ChevronUp className="w-5 h-5" />
+                          </button>
+                          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#ff7a1a] to-[#ff9f5a] flex items-center justify-center text-white font-bold text-sm my-1">
+                            {idx + 1}
+                          </div>
+                          <button disabled={idx === trip.cities.length - 1} onClick={() => moveCity(idx, 'down')} className="text-gray-300 hover:text-[#ff7a1a] disabled:opacity-30 disabled:hover:text-gray-300">
+                            <ChevronDown className="w-5 h-5" />
+                          </button>
+                        </div>
+                        <div className="flex-1 min-w-0 pl-2">
+                          <h3 className="font-bold text-gray-900 text-xl">
+                            {city.name},{" "}
+                            <span className="text-gray-500 font-normal text-lg">{city.country}</span>
+                          </h3>
+                          <p className="text-sm text-gray-500 flex items-center gap-1 mt-1">
+                            <Calendar className="w-3.5 h-3.5 text-gray-400" />
+                            {fmt(city.startDate)} — {fmt(city.endDate)}
+                          </p>
+                        </div>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          onClick={() => handleDeleteCity(city.id, city.name)} 
+                          className="text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors opacity-0 group-hover/city:opacity-100"
+                          title="Delete Stop"
+                        >
+                          <Trash2 className="w-5 h-5" />
+                        </Button>
+                      </div>
+
+                      <CardContent className="p-0">
+                        {/* Day by Day Breakdown */}
+                        {days.map((date, dayIdx) => {
+                          const dateStr = date.toISOString().split('T')[0];
+                          const dayActivities = activitiesByDate[dateStr] || [];
+                          const isAdding = addingActivityTo?.cityId === city.id && addingActivityTo?.dateStr === dateStr;
+
+                          return (
+                            <div key={dateStr} className="border-b border-gray-100 last:border-0">
+                              <div className="flex items-center justify-between px-5 py-3 bg-gray-50/80">
+                                <h4 className="font-semibold text-gray-700 flex items-center gap-2">
+                                  <Badge className="bg-gray-200 text-gray-700 hover:bg-gray-200 border-0">Day {dayIdx + 1}</Badge>
+                                  {fmt(date)}
+                                </h4>
+                                <Button variant="ghost" size="sm" onClick={() => setAddingActivityTo({ cityId: city.id, dateStr })} className="text-[#ff7a1a] hover:bg-orange-50 h-8">
+                                  <Plus className="w-4 h-4 mr-1" /> Add
+                                </Button>
                               </div>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
+
+                              {isAdding && renderActivityForm(city.id, dateStr)}
+                              {renderActivityList(dayActivities)}
+                            </div>
+                          );
+                        })}
+
+                        {/* Unassigned / Anytime Activities */}
+                        {unassignedActs.length > 0 && (
+                          <div className="border-t border-gray-200 bg-orange-50/30">
+                            <div className="flex items-center justify-between px-5 py-3">
+                              <h4 className="font-semibold text-gray-600 flex items-center gap-2">
+                                Anytime / Unscheduled
+                              </h4>
+                            </div>
+                            {renderActivityList(unassignedActs)}
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                );
+              })}
             </div>
           )}
 
