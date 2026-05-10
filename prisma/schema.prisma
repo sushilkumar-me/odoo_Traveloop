@@ -17,18 +17,24 @@ model User {
   country       String?
   emailVerified DateTime?
   image         String?
+  bio           String?   @db.Text
+  language      String    @default("en")
+  currency      String    @default("USD")
+  travelStyle   String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
   // Relations
   accounts      Account[]
-  sessions      Session[]
-  trips         Trip[]
-  activities    Activity[]
-  notes         Note[]
-  packingItems  PackingItem[]
-  budgets       Budget[]
-  expenses      Expense[]
+  sessions     Session[]
+  trips        Trip[]
+  activities   Activity[]
+  notes        Note[]
+  packingItems PackingItem[]
+  budgets      Budget[]
+  expenses     Expense[]
+  savedDestinations SavedDestination[]
+  preferences  UserPreferences?
 }
 
 model Account {
@@ -67,8 +73,81 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-// Trip Models
+// Destination/City Database
+model Destination {
+  id            String   @id @default(cuid())
+  name          String   @unique
+  country       String
+  region        String
+  description   String?  @db.Text
+  imageUrl      String?
+  dailyBudget   Float?
+  popularity    Int      @default(0)
+  rating        Float    @default(0)
+  climate       String?
+  travelType   String?
+  tags          String[]
+  isPopular     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
+  savedBy   SavedDestination[]
+}
+
+model SavedDestination {
+  id            String   @id @default(cuid())
+  userId        String
+  destinationId String
+  createdAt     DateTime @default(now())
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  destination Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, destinationId])
+}
+
+// Activity Categories
+model ActivityCategory {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  icon        String?
+  description String?
+
+  activities Activity[]
+}
+
+// Activity Database
+model Activity {
+  id            String   @id @default(cuid())
+  name          String   @unique
+  description   String?  @db.Text
+  location      String?
+  imageUrl      String?
+  duration      String?
+  cost          Float?
+  currency      String   @default("USD")
+  rating        Float    @default(0)
+  categoryId    String?
+  category      ActivityCategory? @relation(fields: [categoryId], references: [id])
+
+  // Activity properties
+  isIndoor     Boolean?
+  isFamilyFriendly Boolean?
+  adventureLevel String? // easy, moderate, challenging
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  userId       String?
+  user         User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+  tripId       String?
+  trip         Trip?   @relation(fields: [tripId], references: [id], onDelete: SetNull)
+  cityId       String?
+  city         City?   @relation(fields: [cityId], references: [id], onDelete: SetNull)
+}
+
+// Trip Itinerary Models
 model Trip {
   id          String   @id @default(cuid())
   name        String
@@ -105,31 +184,6 @@ model City {
   tripId      String
   trip        Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
   activities  Activity[]
-}
-
-model Activity {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  location    String?
-  date        DateTime
-  startTime   String?
-  endTime     String?
-  cost        Float?
-  currency    String   @default("USD")
-  category    String?
-  notes       String?  @db.Text
-  order       Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Relations
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tripId      String?
-  trip        Trip?    @relation(fields: [tripId], references: [id], onDelete: SetNull)
-  cityId      String?
-  city        City?    @relation(fields: [cityId], references: [id], onDelete: SetNull)
 }
 
 model Note {
@@ -192,4 +246,17 @@ model Expense {
   budget      Budget   @relation(fields: [budgetId], references: [id], onDelete: Cascade)
   userId      String
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UserPreferences {
+  id                  String   @id @default(cuid())
+  userId              String   @unique
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  emailNotifications  Boolean  @default(true)
+  pushNotifications   Boolean  @default(true)
+  tripReminders       Boolean  @default(true)
+  marketingEmails     Boolean  @default(false)
+  theme               String   @default("dark")
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 }
