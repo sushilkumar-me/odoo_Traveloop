@@ -144,12 +144,15 @@ export default function PackingPage() {
   }, [searchQuery]);
 
   const { data: tripsData } = useQuery({
-    queryKey: ["user-trips", userEmail],
-    queryFn: () => getUserTripsByEmail(userEmail!),
-    enabled: !!userEmail,
+    queryKey: ["user-trips", userId],
+    queryFn: () => {
+      if (!userId) return Promise.resolve({ success: true, data: [] });
+      return import("@/lib/actions/packing-actions").then(m => m.getUserTrips(userId));
+    },
+    enabled: !!userId,
   });
 
-  const userIdFromEmail = tripsData?.data?.userId || userId;
+  const userIdFromEmail = userId;
 
   const { data: packingData, isLoading, refetch } = useQuery({
     queryKey: ["packing-items", userIdFromEmail, selectedTrip, debouncedSearch, selectedCategory, sortBy],
@@ -173,7 +176,7 @@ export default function PackingPage() {
     enabled: !!userIdFromEmail && !!selectedTrip,
   });
 
-  const trips = tripsData?.data?.trips || [];
+  const trips = Array.isArray(tripsData?.data) ? tripsData.data : [];
   const data = packingData?.data as PackingData | undefined;
   const items = data?.items || [];
   const grouped = data?.grouped || {};
@@ -349,18 +352,21 @@ export default function PackingPage() {
             <div className="flex items-center gap-4">
               <div className="flex-1">
                 <label className="text-slate-400 text-sm mb-2 block">Select Trip</label>
-                <select
-                  value={selectedTrip || ""}
-                  onChange={(e) => setSelectedTrip(e.target.value || null)}
-                  className="w-full h-12 px-4 rounded-2xl bg-white/5 border border-white/10 text-white appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-orange-500/50"
-                >
-                  <option value="" className="bg-slate-900">Choose a trip...</option>
-                  {trips.map((trip: TripData) => (
-                    <option key={trip.id} value={trip.id} className="bg-slate-900">
-                      {trip.name} {trip.startDate ? `(${new Date(trip.startDate).toLocaleDateString()})` : ""}
-                    </option>
-                  ))}
-                </select>
+                <div className="relative">
+                  <select
+                    value={selectedTrip || ""}
+                    onChange={(e) => setSelectedTrip(e.target.value || null)}
+                    className="w-full h-12 px-4 pr-10 rounded-2xl bg-white/5 border border-white/10 text-white appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-orange-500/50"
+                  >
+                    <option value="" className="bg-slate-900">Choose a trip...</option>
+                    {trips.map((trip: TripData) => (
+                      <option key={trip.id} value={trip.id} className="bg-slate-900">
+                        {trip.name} {trip.startDate ? `(${new Date(trip.startDate).toLocaleDateString()})` : ""}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none" />
+                </div>
               </div>
 
               {selectedTrip && (

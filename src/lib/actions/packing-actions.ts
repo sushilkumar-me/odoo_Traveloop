@@ -27,7 +27,7 @@ const categories = [
   { value: "other", label: "Other", icon: "Package", color: "text-slate-400" },
 ];
 
-export const packingCategories = categories;
+
 
 export async function getPackingItems(userId: string, tripId: string, params?: {
   search?: string;
