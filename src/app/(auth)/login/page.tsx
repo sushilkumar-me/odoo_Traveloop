@@ -25,13 +25,14 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
 
+  // Only redirect after session loads AND user is authenticated
   useEffect(() => {
-    if (session) {
+    if (status === "authenticated" && session) {
       router.push("/dashboard");
     }
-  }, [session, router]);
+  }, [session, status, router]);
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -55,6 +56,18 @@ export default function LoginPage() {
       setError("Invalid email or password");
       setIsLoading(false);
     }
+    // Redirect will happen via useEffect when session is set
+  }
+
+  // Show loading state while checking session
+  if (status === "loading") {
+    return (
+      <Card className="bg-white/95 backdrop-blur-xl border border-gray-200/50 shadow-2xl">
+        <CardContent className="p-8 flex items-center justify-center min-h-[400px]">
+          <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+        </CardContent>
+      </Card>
+    );
   }
 
   return (
