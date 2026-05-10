@@ -3,18 +3,34 @@
 import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { ActionResponse } from "@/types";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 const createTripSchema = z.object({
-  name: z.string().min(1, "Name is required").max(100),
+  name: z.string().min(1, "Trip name is required").max(100),
   description: z.string().optional(),
   startDate: z.coerce.date(),
   endDate: z.coerce.date(),
   coverImage: z.string().optional(),
+  budget: z.coerce.number().min(0).optional(),
 });
 
 export async function createTrip(data: z.infer<typeof createTripSchema>) {
   try {
+    // Get session
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      return { success: false, error: "You must be logged in to create a trip" };
+    }
+
+    // Get user from DB
+    const user = await db.user.findUnique({
+      where: { email: session.user.email },
+    });
+    if (!user) {
+      return { success: false, error: "User not found" };
+    }
+
     // Validate input
     const validated = createTripSchema.parse(data);
 
@@ -23,19 +39,37 @@ export async function createTrip(data: z.infer<typeof createTripSchema>) {
       return { success: false, error: "End date must be after start date" };
     }
 
-    // TODO: Get userId from session (better-auth)
-    const userId = "demo-user-id";
+    // Create trip (and optionally a budget) in a transaction
+    const trip = await db.$transaction(async (tx) => {
+      const newTrip = await tx.trip.create({
+        data: {
+          name: validated.name,
+          description: validated.description,
+          startDate: validated.startDate,
+          endDate: validated.endDate,
+          coverImage: validated.coverImage,
+          userId: user.id,
+        },
+      });
 
-    // Create trip
-    const trip = await db.trip.create({
-      data: {
-        ...validated,
-        userId,
-      },
+      // Create a budget if amount was provided
+      if (validated.budget && validated.budget > 0) {
+        await tx.budget.create({
+          data: {
+            name: `${validated.name} Budget`,
+            totalAmount: validated.budget,
+            currency: user.currency || "USD",
+            tripId: newTrip.id,
+            userId: user.id,
+          },
+        });
+      }
+
+      return newTrip;
     });
 
-    // Revalidate paths
     revalidatePath("/dashboard/trips");
+    revalidatePath("/my-trips");
 
     return { success: true, data: trip };
   } catch (error) {

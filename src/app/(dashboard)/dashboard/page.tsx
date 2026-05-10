@@ -130,7 +130,7 @@ export default async function DashboardPage() {
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center mb-4">
               <Wallet className="h-6 w-6 text-white" />
             </div>
-            <p className="text-3xl font-bold text-gray-900 mb-1">${totalBudget.toLocaleString()}</p>
+            <p className="text-3xl font-bold text-gray-900 mb-1">${totalBudget.toLocaleString("en-US")}</p>
             <p className="text-sm text-gray-500">Total Budget</p>
           </CardContent>
         </Card>
@@ -140,7 +140,7 @@ export default async function DashboardPage() {
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center mb-4">
               <Users className="h-6 w-6 text-white" />
             </div>
-            <p className="text-3xl font-bold text-gray-900 mb-1">${totalSpent.toLocaleString()}</p>
+            <p className="text-3xl font-bold text-gray-900 mb-1">${totalSpent.toLocaleString("en-US")}</p>
             <p className="text-sm text-gray-500">Total Spent</p>
           </CardContent>
         </Card>
@@ -260,7 +260,7 @@ export default async function DashboardPage() {
                     {tripBudget && (
                       <div className="flex items-center gap-1 mt-2 text-sm text-gray-500">
                         <Wallet className="h-4 w-4" />
-                        <span>${tripBudget.totalAmount.toLocaleString()}</span>
+                        <span>${tripBudget.totalAmount.toLocaleString("en-US")}</span>
                       </div>
                     )}
                   </div>

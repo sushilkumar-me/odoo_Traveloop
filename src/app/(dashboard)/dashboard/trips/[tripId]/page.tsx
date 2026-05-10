@@ -27,12 +27,12 @@ export default async function TripItineraryPage({ params }: PageProps) {
         orderBy: { order: "asc" },
         include: {
           activities: {
-            orderBy: [{ date: "asc" }, { startTime: "asc" }],
+            orderBy: { createdAt: "asc" },
           },
         },
       },
       activities: {
-        orderBy: [{ date: "asc" }, { startTime: "asc" }],
+        orderBy: { createdAt: "asc" },
       },
       budgets: {
         include: { expenses: true },

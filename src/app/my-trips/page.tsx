@@ -2,7 +2,6 @@ import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
-import Link from "next/link";
 import { MyTripsContent } from "./my-trips-content";
 
 export default async function MyTripsPage() {
@@ -26,6 +25,10 @@ export default async function MyTripsPage() {
       },
     },
   });
+
+  if (!user) {
+    redirect("/login");
+  }
 
   return <MyTripsContent user={user} />;
 }

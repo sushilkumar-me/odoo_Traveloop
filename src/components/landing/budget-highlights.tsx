@@ -15,7 +15,7 @@ const budgetCards = [
   {
     icon: Wallet,
     label: "Total Budget",
-    value: `$${budgetData.totalBudget.toLocaleString()}`,
+    value: `$${budgetData.totalBudget.toLocaleString("en-US")}`,
     subtext: "Across 4 trips",
     color: "text-orange-400",
     bg: "bg-orange-500/10",
@@ -23,7 +23,7 @@ const budgetCards = [
   {
     icon: TrendingDown,
     label: "Spent",
-    value: `$${budgetData.spent.toLocaleString()}`,
+    value: `$${budgetData.spent.toLocaleString("en-US")}`,
     subtext: "67% used",
     color: "text-teal-400",
     bg: "bg-teal-500/10",
@@ -31,7 +31,7 @@ const budgetCards = [
   {
     icon: PiggyBank,
     label: "Remaining",
-    value: `$${budgetData.remaining.toLocaleString()}`,
+    value: `$${budgetData.remaining.toLocaleString("en-US")}`,
     subtext: "33% left",
     color: "text-purple-400",
     bg: "bg-purple-500/10",

@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useTransition } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { deleteTrip } from "@/lib/actions/trip-actions";
+import { useRouter } from "next/navigation";
 import {
   Search,
   Plus,
@@ -46,7 +48,7 @@ interface User {
 }
 
 interface MyTripsContentProps {
-  user: User | null;
+  user: User;
 }
 
 const containerVariants = {
@@ -67,84 +69,21 @@ const cardVariants = {
   visible: { opacity: 1, scale: 1 },
 };
 
-const dummyTrips = [
-  {
-    id: "1",
-    name: "Bali Adventure",
-    description: "Explore the tropical paradise of Bali with stunning beaches, ancient temples, and vibrant culture.",
-    startDate: new Date("2025-06-15"),
-    endDate: new Date("2025-06-25"),
-    coverImage: "https://images.unsplash.com/photo-15379961944714-e7fb7020d54e?w=600&h=400&fit=crop",
-    cities: [{ id: "1", name: "Bali", country: "Indonesia" }],
-    budgets: [{ id: "1", totalAmount: 2500, expenses: [{ amount: 800 }] }],
-  },
-  {
-    id: "2",
-    name: "Europe Escape",
-    description: "A romantic journey through Paris, Rome, and Barcelona experiencing world-class art and cuisine.",
-    startDate: new Date("2025-09-01"),
-    endDate: new Date("2025-09-15"),
-    coverImage: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=600&h=400&fit=crop",
-    cities: [
-      { id: "1", name: "Paris", country: "France" },
-      { id: "2", name: "Rome", country: "Italy" },
-    ],
-    budgets: [{ id: "2", totalAmount: 4500, expenses: [{ amount: 1200 }] }],
-  },
-  {
-    id: "3",
-    name: "Tokyo Explorer",
-    description: "Discover the perfect blend of ancient traditions and cutting-edge technology in Japan's capital.",
-    startDate: new Date("2025-08-10"),
-    endDate: new Date("2025-08-20"),
-    coverImage: "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=600&h=400&fit=crop",
-    cities: [{ id: "1", name: "Tokyo", country: "Japan" }],
-    budgets: [{ id: "3", totalAmount: 3200, expenses: [{ amount: 950 }] }],
-  },
-  {
-    id: "4",
-    name: "Goa Weekend",
-    description: "Relax on pristine beaches, enjoy water sports, and experience the vibrant nightlife of Goa.",
-    startDate: new Date("2025-03-20"),
-    endDate: new Date("2025-03-24"),
-    coverImage: "https://images.unsplash.com/photo-1587132137056-bfbf0166836e?w=600&h=400&fit=crop",
-    cities: [{ id: "1", name: "Goa", country: "India" }],
-    budgets: [{ id: "4", totalAmount: 800, expenses: [{ amount: 400 }] }],
-  },
-  {
-    id: "5",
-    name: "Dubai Luxury Tour",
-    description: "Experience opulence in the UAE with world-class shopping, desert safaris, and futuristic architecture.",
-    startDate: new Date("2025-11-01"),
-    endDate: new Date("2025-11-08"),
-    coverImage: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=600&h=400&fit=crop",
-    cities: [{ id: "1", name: "Dubai", country: "UAE" }],
-    budgets: [{ id: "5", totalAmount: 5000, expenses: [{ amount: 1500 }] }],
-  },
-  {
-    id: "6",
-    name: "Switzerland Dreams",
-    description: "Majestic alpine scenery, scenic train rides, and charming villages in the heart of Europe.",
-    startDate: new Date("2025-12-20"),
-    endDate: new Date("2025-12-30"),
-    coverImage: "https://images.unsplash.com/photo-1530122037265-a5f1f91b3b23?w=600&h=400&fit=crop",
-    cities: [{ id: "1", name: "Zurich", country: "Switzerland" }],
-    budgets: [{ id: "6", totalAmount: 6000, expenses: [{ amount: 2000 }] }],
-  },
-];
+
 
 export function MyTripsContent({ user }: MyTripsContentProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState<"all" | "upcoming" | "completed" | "draft">("all");
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+  const [isPending, startTransition] = useTransition();
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const router = useRouter();
 
-  const allTrips = user?.trips && user.trips.length > 0
-    ? user.trips.map((trip) => ({
-        ...trip,
-        startDate: new Date(trip.startDate),
-        endDate: new Date(trip.endDate),
-      }))
-    : dummyTrips;
+  const allTrips = user.trips.map((trip) => ({
+    ...trip,
+    startDate: new Date(trip.startDate),
+    endDate: new Date(trip.endDate),
+  }));
 
   const [now, setNow] = useState<Date | null>(null);
 
@@ -185,6 +124,16 @@ export function MyTripsContent({ user }: MyTripsContentProps) {
   const totalTrips = allTrips.length;
   const upcomingCount = allTrips.filter((t) => new Date(t.startDate) > now).length;
   const uniqueCountries = new Set(allTrips.flatMap((t) => t.cities.map((c) => c.country))).size;
+
+  const handleDelete = (tripId: string, tripName: string) => {
+    if (!confirm(`Delete "${tripName}"? This cannot be undone.`)) return;
+    setDeletingId(tripId);
+    startTransition(async () => {
+      await deleteTrip(tripId);
+      setDeletingId(null);
+      router.refresh();
+    });
+  };
   const totalBudget = allTrips.reduce((sum, t) => sum + (t.budgets[0]?.totalAmount || 0), 0);
 
   return (
@@ -251,7 +200,7 @@ export function MyTripsContent({ user }: MyTripsContentProps) {
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center mb-4">
                   <Globe className="h-6 w-6 text-white" />
                 </div>
-                <p className="text-3xl font-bold text-gray-900 mb-1">{uniqueCountries || 6}</p>
+                <p className="text-3xl font-bold text-gray-900 mb-1">{uniqueCountries}</p>
                 <p className="text-sm text-gray-500">Countries Planned</p>
               </CardContent>
             </Card>
@@ -263,7 +212,7 @@ export function MyTripsContent({ user }: MyTripsContentProps) {
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center mb-4">
                   <Wallet className="h-6 w-6 text-white" />
                 </div>
-                <p className="text-3xl font-bold text-gray-900 mb-1">${totalBudget.toLocaleString()}</p>
+                <p className="text-3xl font-bold text-gray-900 mb-1">${totalBudget.toLocaleString("en-US")}</p>
                 <p className="text-sm text-gray-500">Estimated Budget</p>
               </CardContent>
             </Card>
@@ -400,7 +349,7 @@ export function MyTripsContent({ user }: MyTripsContentProps) {
                       </h3>
                       <div className="flex items-center gap-1">
                         <Wallet className="h-4 w-4 text-[#ff7a1a]" />
-                        <span className="text-gray-700 font-semibold">${budget.toLocaleString()}</span>
+                        <span className="text-gray-700 font-semibold">${budget.toLocaleString("en-US")}</span>
                       </div>
                     </div>
 
@@ -440,7 +389,13 @@ export function MyTripsContent({ user }: MyTripsContentProps) {
                           <Edit2 className="h-4 w-4" />
                         </Button>
                       </Link>
-                      <Button size="sm" variant="ghost" className="text-gray-500 hover:text-red-500 hover:bg-red-50 p-2">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        disabled={deletingId === trip.id || isPending}
+                        onClick={() => handleDelete(trip.id, trip.name)}
+                        className="text-gray-500 hover:text-red-500 hover:bg-red-50 p-2 disabled:opacity-50"
+                      >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
