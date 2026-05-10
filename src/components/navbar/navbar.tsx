@@ -3,9 +3,8 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Search, Menu, Bell, LogOut } from "lucide-react";
+import { Search, Bell, ChevronDown } from "lucide-react";
 import { useState } from "react";
-import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 
 export function Navbar() {
@@ -17,68 +16,60 @@ export function Navbar() {
   const initials = userName.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
 
   return (
-    <header className="border-b bg-card px-6 py-3">
-      <div className="flex items-center justify-between gap-4">
-        {/* Mobile Menu Button */}
-        <Button variant="ghost" size="icon" className="md:hidden">
-          <Menu className="h-5 w-5" />
-        </Button>
-
-        {/* Search */}
-        <div className="flex-1 max-w-md">
+    <header className="bg-white border-b px-6 py-4">
+      <div className="flex items-center justify-between gap-6">
+        {/* Search Bar */}
+        <div className="flex-1 max-w-2xl">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
             <Input
               type="search"
               placeholder="Search trips, activities..."
-              className="pl-9 bg-muted/50"
+              className="w-full pl-12 pr-4 py-3 bg-gray-50 border-0 rounded-full text-sm focus:ring-2 focus:ring-[#ff7a1a]/20 focus:bg-white transition-all"
             />
           </div>
         </div>
 
         {/* Right Side */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4">
           {/* Notifications */}
-          <Button variant="ghost" size="icon">
-            <Bell className="h-5 w-5" />
+          <Button
+            variant="ghost"
+            size="icon"
+            className="relative hover:bg-gray-100 rounded-full"
+          >
+            <Bell className="h-5 w-5 text-gray-600" />
+            <span className="absolute top-2 right-2 w-2 h-2 bg-[#ff7a1a] rounded-full" />
           </Button>
 
           {/* User Menu */}
           <div className="relative">
             <button
               onClick={() => setShowUserMenu(!showUserMenu)}
-              className="flex items-center gap-2 p-1 rounded-lg hover:bg-muted"
+              className="flex items-center gap-3 p-2 rounded-full hover:bg-gray-100 transition-colors"
             >
-              <Avatar className="h-8 w-8">
-                <AvatarFallback>{initials}</AvatarFallback>
+              <Avatar className="h-10 w-10 ring-2 ring-gray-100">
+                <AvatarFallback className="bg-gradient-to-br from-[#ff7a1a] to-[#ff9f5a] text-white font-semibold">
+                  {initials}
+                </AvatarFallback>
               </Avatar>
+              <ChevronDown className="h-4 w-4 text-gray-400" />
             </button>
 
             {showUserMenu && (
-              <div className="absolute right-0 mt-2 w-48 bg-popover border rounded-lg shadow-lg py-1 z-50">
-                <div className="px-3 py-2 border-b">
-                  <p className="font-medium">{userName}</p>
-                  <p className="text-xs text-muted-foreground">{userEmail}</p>
+              <div className="absolute right-0 mt-3 w-56 bg-white border rounded-2xl shadow-xl shadow-gray-200/50 overflow-hidden z-50">
+                <div className="px-4 py-3 bg-gray-50 border-b">
+                  <p className="font-semibold text-gray-900">{userName}</p>
+                  <p className="text-sm text-gray-500">{userEmail}</p>
                 </div>
-                <Link
-                  href="/dashboard/profile"
-                  className="block px-3 py-2 text-sm hover:bg-muted"
-                >
-                  Profile
-                </Link>
-                <Link
-                  href="/dashboard/settings"
-                  className="block px-3 py-2 text-sm hover:bg-muted"
-                >
-                  Settings
-                </Link>
-                <button
-                  onClick={() => signOut({ callbackUrl: "/login" })}
-                  className="w-full text-left px-3 py-2 text-sm text-destructive hover:bg-muted flex items-center gap-2"
-                >
-                  <LogOut className="h-4 w-4" />
-                  Sign Out
-                </button>
+                <div className="py-2">
+                  <button
+                    onClick={() => signOut({ callbackUrl: "/login" })}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    Sign Out
+                  </button>
+                </div>
               </div>
             )}
           </div>
