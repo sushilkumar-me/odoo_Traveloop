@@ -1,26 +1,38 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { getToken } from "next-auth/jwt";
 
-// Public paths that don't require authentication
-const publicPaths = ["/", "/login", "/register", "/forgot-password", "/verify"];
+const publicPaths = ["/", "/login", "/register", "/api/register", "/api/auth"];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-
-  // Check if path is public
-  const isPublicPath = publicPaths.some((path) => pathname === path || pathname.startsWith("/api"));
 
   // Skip middleware for static files and Next.js internals
   if (
     pathname.startsWith("/_next") ||
     pathname.startsWith("/static") ||
-    pathname.includes(".")
+    pathname.includes(".") ||
+    pathname.startsWith("/api/auth")
   ) {
     return NextResponse.next();
   }
 
-  // For now, allow all requests - better-auth handles auth in API routes
-  // You can add proper session checking here later
+  // Check if path is public
+  const isPublicPath = publicPaths.some(
+    (path) => pathname === path || pathname.startsWith(path)
+  );
+
+  if (isPublicPath) {
+    return NextResponse.next();
+  }
+
+  // Check for session token
+  const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+
+  if (!token) {
+    const loginUrl = new URL("/login", request.url);
+    return NextResponse.redirect(loginUrl);
+  }
 
   return NextResponse.next();
 }
